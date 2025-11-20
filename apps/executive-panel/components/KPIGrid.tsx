@@ -1,9 +1,18 @@
 import MiniSparkline from "./MiniSparkline";
 
-type KPI = {
+export type KPI = {
   label: string;
   value: string;
-  badge?: "green"|"amber"|"red";
+  // Ampliado para aceitar temas premium e futuros
+  badge?: 
+    | "green"
+    | "amber"
+    | "red"
+    | "gold"
+    | "premium"
+    | "blue"
+    | "purple"
+    | string;   // fallback para total flexibilidade
   series?: number[];
 };
 
@@ -17,8 +26,14 @@ export default function KPIGrid({ data }: { data: KPI[] }) {
               <p className="text-sm subtle">{k.label}</p>
               <p className="text-2xl font-semibold mt-1">{k.value}</p>
             </div>
-            {k.badge && <span className={`badge badge-${k.badge}`}>{k.badge}</span>}
+
+            {k.badge && (
+              <span className={`badge badge-${k.badge}`}>
+                {k.badge}
+              </span>
+            )}
           </div>
+
           {k.series && (
             <div className="mt-3">
               <MiniSparkline values={k.series} />
