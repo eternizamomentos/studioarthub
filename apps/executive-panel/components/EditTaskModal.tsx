@@ -143,7 +143,7 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
           <button
             onClick={closeModal}
             className="absolute right-4 top-4 text-pure/50 hover:text-pure/80 text-xl transition"
-            aria-label="Fechar modal"
+            aria-label="Fechar"
           >
             ×
           </button>
@@ -153,7 +153,7 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* Título */}
+          {/* Title */}
           <div>
             <label className="text-sm text-pure/80 mb-1.5 block">Título</label>
             <input
@@ -245,12 +245,7 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
                 value={newLinkLabel}
                 onChange={e => setNewLinkLabel(e.target.value)}
                 className="flex-1 p-2 rounded-lg bg-white/5 text-pure/90 border border-white/10 focus:border-gold/50 focus:outline-none transition"
-                onKeyDown={e => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addLink(e);
-                  }
-                }}
+                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLink(e); } }}
               />
               <input
                 type="url"
@@ -258,16 +253,11 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
                 value={newLinkUrl}
                 onChange={e => setNewLinkUrl(e.target.value)}
                 className="flex-1 p-2 rounded-lg bg-white/5 text-pure/90 border border-white/10 focus:border-gold/50 focus:outline-none transition"
-                onKeyDown={e => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addLink(e);
-                  }
-                }}
+                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLink(e); } }}
               />
             </form>
             {links.length > 0 && (
-              <ul className="space-y-1">
+              <ul className="space-y-2">
                 {links.map(link => (
                   <li key={link.id} className="flex items-center justify-between text-sm text-pure/70 bg-white/5 rounded-lg p-2 hover:bg-white/10 transition">
                     <a
