@@ -1,0 +1,784 @@
+/* ============================================
+   PAINEL JURÍDICO — THEME PREMIUM ISOLADO
+   (não interfere no Painel Executivo)
+============================================ */
+
+/* BASE DO BODY – fundo, tipografia, respiro */
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 2.5rem 1.75rem 3.5rem;
+  background:
+    radial-gradient(circle at top, #020617 0%, #020314 55%, #02010f 100%);
+  color: #f9fafb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter",
+    sans-serif;
+}
+
+/* Centralizar conteúdo em telas largas */
+@media (min-width: 1200px) {
+  body {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 3rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  body {
+    max-width: 1440px;
+    padding-inline: 4rem;
+  }
+}
+
+/* ============================================
+   LEGAL SECTION (header + corpo)
+============================================ */
+
+.legal-section {
+  border-radius: 18px;
+  padding: 1.75rem 1.5rem 1.9rem;
+  border: 1px solid rgba(248, 250, 252, 0.05);
+  background:
+    radial-gradient(circle at top left, rgba(231, 183, 95, 0.07), transparent 55%)
+    rgba(15, 23, 42, 0.94);
+  box-shadow: 0 22px 45px rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+}
+
+/* Espaço entre seções (além do space-y-8 do Tailwind) */
+.legal-section + .legal-section {
+  margin-top: 0.75rem;
+}
+
+.legal-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.legal-section-eyebrow {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(248, 250, 252, 0.55);
+  margin-bottom: 0.3rem;
+}
+
+.legal-section-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, #f9fafb, #e7b75f);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.legal-section-subtitle {
+  margin-top: 0.35rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: rgba(209, 213, 219, 0.88);
+  max-width: 38rem;
+}
+
+.legal-section-right {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Corpo da seção (onde vão os cards / grids) */
+.legal-section-body {
+  margin-top: 0.75rem;
+}
+
+/* ============================================
+   BADGES DO PAINEL
+============================================ */
+
+.legal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.legal-badge-gold {
+  background: rgba(231, 183, 95, 0.14);
+  color: #fef9c3;
+  border: 1px solid rgba(231, 183, 95, 0.6);
+}
+
+.legal-badge-success {
+  background: rgba(34, 197, 94, 0.16);
+  color: #bbf7d0;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+}
+
+.legal-badge-soft {
+  background: rgba(148, 163, 184, 0.16);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+/* Fallback caso o componente use só .legal-badge */
+.legal-badge:not(.legal-badge-gold):not(.legal-badge-success):not(.legal-badge-soft) {
+  background: rgba(231, 183, 95, 0.12);
+  color: #fef9c3;
+  border: 1px solid rgba(231, 183, 95, 0.45);
+}
+
+/* ============================================
+   GRID DOS CARDS
+============================================ */
+
+.legal-grid-2 {
+  display: grid;
+  gap: 1.4rem;
+}
+
+@media (min-width: 900px) {
+  .legal-grid-2 {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
+
+.legal-grid-3 {
+  display: grid;
+  gap: 1.4rem;
+}
+
+@media (min-width: 1024px) {
+  .legal-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ============================================
+   CARD JURÍDICO PREMIUM
+============================================ */
+
+.legal-card {
+  position: relative;
+  border-radius: 18px;
+  padding: 1.35rem 1.3rem 1.25rem;
+  background: radial-gradient(circle at top left,
+      rgba(15, 23, 42, 0.96),
+      rgba(15, 23, 42, 0.94));
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.18s ease;
+}
+
+.legal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(231, 183, 95, 0.55),
+    rgba(231, 183, 95, 0)
+  );
+  transition: opacity 0.22s ease;
+}
+
+.legal-card:hover {
+  border-color: rgba(231, 183, 95, 0.7);
+  box-shadow: 0 24px 45px rgba(15, 23, 42, 0.95);
+  transform: translateY(-1px);
+}
+
+.legal-card:hover::before {
+  opacity: 0.18;
+}
+
+/* HEADER / BODY / FOOTER DO CARD (anatomia consistente) */
+.legal-card-header {
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.legal-card-body {
+  margin-top: 0.2rem;
+}
+
+.legal-card-footer {
+  margin-top: 0.9rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed rgba(148, 163, 184, 0.4);
+  font-size: 0.78rem;
+  color: rgba(203, 213, 225, 0.9);
+}
+
+/* Título e descrição do card */
+.legal-card-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  color: #f9fafb;
+}
+
+.legal-card-description {
+  margin-top: 0.25rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: rgba(209, 213, 219, 0.86);
+}
+
+/* Lista interna de bullets */
+.legal-card-list {
+  margin-top: 0.75rem;
+  padding-left: 1rem;
+  font-size: 0.86rem;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+.legal-card-list li + li {
+  margin-top: 0.25rem;
+}
+
+/* Acentuação dos cards (mapeia com LegalCard.tsx) */
+.legal-border-default {
+  /* mantém o padrão suave de grafite */
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.legal-border-gold {
+  border-color: rgba(231, 183, 95, 0.7);
+  box-shadow:
+    0 0 20px rgba(231, 183, 95, 0.35),
+    0 20px 40px rgba(15, 23, 42, 0.95);
+}
+
+.legal-border-danger {
+  border-color: rgba(248, 113, 113, 0.8);
+  background:
+    radial-gradient(circle at top left,
+      rgba(127, 29, 29, 0.7),
+      rgba(15, 23, 42, 0.96));
+  box-shadow:
+    0 0 18px rgba(248, 113, 113, 0.35),
+    0 20px 40px rgba(15, 23, 42, 0.95);
+}
+
+.legal-border-success {
+  border-color: rgba(34, 197, 94, 0.85);
+  background:
+    radial-gradient(circle at top left,
+      rgba(22, 101, 52, 0.65),
+      rgba(15, 23, 42, 0.96));
+  box-shadow:
+    0 0 18px rgba(34, 197, 94, 0.35),
+    0 20px 40px rgba(15, 23, 42, 0.95);
+}
+
+/* ============================================
+   ÍNDICE DE CONFORMIDADE – ANEL
+============================================ */
+
+/* Container geral do ring */
+.legal-score-ring {
+  position: relative;
+  margin: 1.3rem auto 1.15rem;
+  width: 210px;
+  height: 210px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Anel externo — estilo Apple Watch */
+.legal-score-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.18), transparent 55%),
+    conic-gradient(
+      from -90deg,
+      #fefce8 0deg,
+      #facc15 120deg,
+      #e7b75f 210deg,
+      #fef9c3 260deg,
+      rgba(15, 23, 42, 0.9) 275deg,
+      rgba(15, 23, 42, 0.9) 360deg
+    );
+  padding: 6px;
+  box-shadow:
+    0 0 22px rgba(231, 183, 95, 0.35),
+    0 18px 45px rgba(15, 23, 42, 0.95);
+}
+
+/* Anel interno escuro */
+.legal-score-ring-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(148, 163, 184, 0.25), transparent 52%),
+    radial-gradient(circle at 80% 120%, rgba(15, 23, 42, 0.9), #020617);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 20px rgba(15, 23, 42, 0.95);
+}
+
+/* Valor numérico */
+.legal-score-value {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fef9c3;
+}
+
+/* Label central */
+.legal-score-label {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+/* Legenda lateral */
+.legal-score-legend {
+  margin-top: 0.4rem;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: rgba(209, 213, 219, 0.88);
+}
+
+.legal-score-legend > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Pílulas de legenda */
+.legal-score-pill {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.65);
+}
+
+.legal-score-pill-ok {
+  background: #22c55e;
+}
+
+.legal-score-pill-warn {
+  background: #f97316;
+}
+
+.legal-score-pill-risk {
+  background: #ef4444;
+}
+
+/* ============================================
+   CHECKLISTS E TAGS (Radar ETO, etc.)
+============================================ */
+
+.legal-checklist {
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.legal-checklist li {
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.legal-checklist p {
+  margin: 0.18rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.94);
+}
+
+.legal-check-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fef9c3;
+  background: rgba(231, 183, 95, 0.16);
+  border: 1px solid rgba(231, 183, 95, 0.65);
+}
+
+/* ============================================
+   CITAÇÕES LEGAIS (LawQuote)
+============================================ */
+
+.law-quote {
+  border-radius: 16px;
+  padding: 1.25rem 1.15rem 1.1rem;
+  background: radial-gradient(circle at top left,
+      rgba(248, 250, 252, 0.06),
+      rgba(15, 23, 42, 0.96));
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+
+.law-quote::before {
+  content: "§";
+  position: absolute;
+  top: -22px;
+  right: 12px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 4.2rem;
+  color: rgba(15, 23, 42, 0.9);
+  text-shadow: 0 0 26px rgba(15, 23, 42, 1);
+}
+
+.law-quote-trecho {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba(226, 232, 240, 0.96);
+}
+
+.law-quote-fonte {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.law-quote-comentario {
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  color: rgba(203, 213, 225, 0.96);
+}
+
+/* ============================================================
+   LAYOUT PREMIUM – SHELL, SIDEBAR, MAIN
+   Compatível com o RootLayout moderno do Painel Jurídico
+   (NÃO INTERFERE NO EXECUTIVE PANEL)
+============================================================ */
+
+/* Shell geral: sidebar à esquerda + conteúdo à direita */
+.legal-shell-wrapper {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  min-height: 100vh;
+  gap: 0px;
+}
+
+/* ==============================
+   SIDEBAR PREMIUM
+============================== */
+
+.legal-sidebar-premium {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 2rem 1.4rem 2.5rem;
+  background:
+    radial-gradient(circle at top left,
+      rgba(15, 23, 42, 0.95),
+      rgba(2, 6, 23, 0.98));
+  border-right: 1px solid rgba(231, 183, 95, 0.1);
+  box-shadow:
+    6px 0 28px rgba(0, 0, 0, 0.25),
+    inset -1px 0 0 rgba(231, 183, 95, 0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Header do sidebar */
+.legal-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.legal-logo-mark {
+  width: 46px;
+  height: 46px;
+  background: rgba(231, 183, 95, 0.12);
+  border: 1px solid rgba(231, 183, 95, 0.35);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.8rem;
+  color: #e7b75f;
+  box-shadow: 0 0 14px rgba(231, 183, 95, 0.25);
+}
+
+.legal-logo-text h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-family: "Playfair Display", serif;
+  color: #f8fafc;
+  letter-spacing: 0.6px;
+}
+
+.legal-logo-text p {
+  margin: 0;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: rgba(209, 213, 219, 0.85);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ==============================
+   NAVIGATION
+============================== */
+
+.legal-nav-block {
+  margin-bottom: 2.1rem;
+}
+
+.legal-nav-section-title {
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-bottom: 0.75rem;
+}
+
+.legal-nav-block ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.legal-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.65rem 0.58rem;
+  font-size: 0.88rem;
+  border-radius: 10px;
+  color: rgba(226, 232, 240, 0.9);
+  text-decoration: none;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  transition: 0.18s ease;
+}
+
+.legal-nav-link:hover {
+  background: rgba(231, 183, 95, 0.08);
+  border-color: rgba(231, 183, 95, 0.45);
+  box-shadow: 0 0 12px rgba(231, 183, 95, 0.25);
+  color: #fef9c3;
+}
+
+.legal-nav-chip {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(231, 183, 95, 0.25);
+  color: #e7b75f;
+  border: 1px solid rgba(231, 183, 95, 0.45);
+}
+
+/* Rodapé do sidebar */
+.legal-sidebar-footer {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(148, 163, 184, 0.65);
+  margin-top: auto;
+  padding-top: 1.4rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+/* ==============================
+   MAIN CONTENT AREA
+============================== */
+
+.legal-main-content {
+  padding: 2.5rem 2.2rem 4rem;
+  background: radial-gradient(circle at top,
+      rgba(2, 6, 23, 0.8),
+      rgba(2, 6, 23, 0.95));
+}
+
+.legal-main-header {
+  margin-bottom: 2.2rem;
+}
+
+.legal-main-header-title {
+  font-family: "Playfair Display", serif;
+  font-size: 2.05rem;
+  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, #f8fafb, #e7b75f);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.legal-main-header-desc {
+  margin-top: 0.35rem;
+  max-width: 48rem;
+  font-size: 0.95rem;
+  color: rgba(203, 213, 225, 0.85);
+}
+
+/* Container interno que renderiza as sections */
+.legal-main-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Inputs do painel jurídico */
+.legal-input {
+  background: rgba(17, 25, 40, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  color: #f9fafb;
+  transition: 0.2s ease;
+}
+
+.legal-input:focus {
+  outline: none;
+  border-color: rgba(231, 183, 95, 0.75);
+  box-shadow: 0 0 0 3px rgba(231, 183, 95, 0.25);
+  background: rgba(17, 25, 40, 0.85);
+}
+
+.bg-gold {
+  background: #e7b75f !important;
+}
+
+.text-gold {
+  color: #e7b75f !important;
+}
+
+/* SELECT PREMIUM */
+.legal-select {
+  background: rgba(15, 23, 42, 0.8);
+  color: #f1f5f9;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font-size: 0.86rem;
+  transition: 0.2s ease;
+}
+
+.legal-select:hover,
+.legal-select:focus {
+  border-color: rgba(231, 183, 95, 0.7);
+  outline: none;
+}
+
+/* TABELA PREMIUM */
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  color: #e2e8f0;
+}
+
+.legal-table thead {
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.legal-table th {
+  text-align: left;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.legal-table td {
+  padding: 0.65rem 0.9rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* RISCO BADGES */
+.legal-risk-baixo {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.legal-risk-medio {
+  color: #f97316;
+  font-weight: 600;
+}
+
+.legal-risk-alto {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* CHECKBOX PREMIUM — FINANCEIRO/FISCAL */
+.legal-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(231, 183, 95, 0.45);
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fefce8;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.legal-checkbox:hover {
+  border-color: rgba(231, 183, 95, 0.75);
+}
+
+.legal-checkbox.checked {
+  background: rgba(231, 183, 95, 0.22);
+  border-color: rgba(231, 183, 95, 0.9);
+  box-shadow: 0 0 12px rgba(231, 183, 95, 0.45);
+}
+
+.checkmark {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fefce8;
+}

@@ -1,0 +1,11 @@
+/* Executve Panel Theme Extension */
+
+:root {
+  --gold: #E7B75F;
+  --navy: #101828;
+  --pure: #FFFFFF;
+}
+
+body {
+  background: var(--color-bg);
+}

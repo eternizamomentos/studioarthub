@@ -1,0 +1,125 @@
+###############################################
+# STUDIO ART HUB — GITIGNORE PROFISSIONAL
+# Monorepo (apps/executive-panel + legal-panel)
+# Proteção contra commits grandes, builds, binários
+###############################################
+
+###########
+# Node.js #
+###########
+node_modules/
+**/node_modules/
+
+# Yarn / PNPM / Bun
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnpm-debug.log*
+
+############
+# Next.js  #
+############
+.next/
+**/.next/
+out/
+dist/
+build/
+
+# Dados temporários do Next
+.next.server/
+.next.cache/
+turbo/
+.turbo/
+.turbopack/
+
+################
+# Cache geral  #
+################
+.cache/
+**/.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+
+##################
+# Logs & tracing #
+##################
+logs/
+*.log
+**/*.log
+.trace
+**/*.trace
+.next/trace
+.turbo/daemon/*
+
+#########################
+# Sistema operacional   #
+#########################
+.DS_Store
+Thumbs.db
+
+#######################
+# Variáveis & Secrets #
+#######################
+.env
+.env.*        # Inclui .env.local, .env.dev, .env.prod
+!.env.example # este pode permanecer se existir
+
+###################
+# Artifacts IA    #
+###################
+*.bin
+*.model
+*.weights
+*.onnx
+*.node
+
+##########################################
+# Proteção contra binários pesados (como
+# o swc-win32-x64-msvc.node de 137MB)    #
+##########################################
+**/*.node
+**/*.wasm
+**/*.exe
+**/*.dll
+**/*.zip
+**/*.gz
+**/*.7z
+**/*.tar
+**/*.iso
+
+#################################
+# Outras ferramentas & sistemas #
+#################################
+.vercel
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+##################################
+# Segurança extra Studio Art Hub #
+##################################
+
+# Evitar rastrear bancos locais
+apps/*/db/*.sqlite
+apps/*/db/*.db
+apps/*/db/*.sqlite-journal
+
+# Permitir MIGRATIONS (muito importante)
+!apps/*/db/migrations/*.sql
+
+# Proteção — pastas de upload
+apps/*/uploads/
+apps/*/storage/
+apps/*/tmp/
+apps/*/temp/

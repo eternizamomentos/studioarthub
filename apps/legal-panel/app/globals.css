@@ -1,0 +1,67 @@
+/* =============================
+   LEGAL PANEL — THEME PREMIUM
+   (isolado do Painel Executivo)
+============================= */
+
+@import "tailwindcss";
+
+/* BRAND TOKENS */
+:root {
+  --color-gold: #E7B75F;
+  --color-gold-soft: #F3E4BE;
+  --color-rose: #E9B8C7;
+  --color-raspberry: #C7355D;
+  --color-bg: #0B1220;
+  --color-card: rgba(17, 25, 40, 0.55);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-pure: #FFFFFF;
+
+  --font-title: "Playfair Display", Georgia, serif;
+  --font-text: "Inter", system-ui, sans-serif;
+
+  --shadow-card: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --blur-card: blur(14px);
+}
+
+/* BASE */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(
+    circle at top,
+    #0d1220 0%,
+    #070b13 60%,
+    #05070c 100%
+  );
+  color: var(--color-pure);
+  font-family: var(--font-text);
+  background-attachment: fixed;
+}
+
+/* RAIZ DO PAINEL JURÍDICO (usada no layout.tsx) */
+.legal-body {
+  min-height: 100vh;
+}
+
+/* CARD PREMIUM */
+.card {
+  background: var(--color-card);
+  backdrop-filter: var(--blur-card);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 1.4rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* SECTION TITLE */
+.section-title {
+  font-family: var(--font-title);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  background: linear-gradient(90deg, #e7b75f, #f2e3b0);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-size: 1.8rem;
+}
