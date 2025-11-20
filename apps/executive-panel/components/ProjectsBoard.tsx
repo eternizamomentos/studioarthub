@@ -1,3 +1,4 @@
+// apps/executive-panel/components/ProjectsBoard.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,6 +6,9 @@ import GUTModal, { GUTValues } from "./GUTModal";
 import NewTaskModal from "./NewTaskModal";
 import EditTaskModal from "./EditTaskModal";
 
+/* ============================================================
+   DRAG & DROP
+============================================================ */
 import {
   DndContext,
   PointerSensor,
@@ -12,10 +16,21 @@ import {
   useSensors,
   closestCenter,
   DragEndEvent,
-  useDraggable,
   useDroppable,
+  useDraggable,
 } from "@dnd-kit/core";
+
 import { CSS } from "@dnd-kit/utilities";
+
+/* ============================================================
+   TYPES
+============================================================ */
+
+type LinkItem = {
+  id: string;
+  label: string;
+  url: string;
+};
 
 type UploadedFile = {
   id: string;
@@ -32,54 +47,34 @@ type Item = {
   due: string;
   gut: GUTValues;
   createdAt: number;
+
   description?: string;
   attachments?: UploadedFile[];
+  links?: LinkItem[];
+  aiInsight?: string;
 };
 
 type Col = { title: string; color: string; items: Item[] };
+
+/* ============================================================
+   INITIAL BOARD
+============================================================ */
 
 const initialBoard: Col[] = [
   {
     title: "Pendente",
     color: "amber",
-    items: [
-      {
-        id: "p1",
-        title: "FAQ SEO",
-        owner: "JG",
-        due: "2025-11-20",
-        gut: { g: 3, u: 2, t: 1 },
-        createdAt: Date.now(),
-      },
-    ],
+    items: [],
   },
   {
     title: "Em Execução",
     color: "blush",
-    items: [
-      {
-        id: "p2",
-        title: "Worker v2.6 (Webhook PIX)",
-        owner: "JG",
-        due: "2025-11-17",
-        gut: { g: 4, u: 3, t: 2 },
-        createdAt: Date.now(),
-      },
-    ],
+    items: [],
   },
   {
     title: "Concluído",
     color: "green",
-    items: [
-      {
-        id: "p3",
-        title: "Painel v2.5 Logs",
-        owner: "JG",
-        due: "2025-11-10",
-        gut: { g: 1, u: 1, t: 1 },
-        createdAt: Date.now(),
-      },
-    ],
+    items: [],
   },
   {
     title: "Atrasado",
@@ -97,26 +92,41 @@ const BADGE_CLASS: Record<string, string> = {
 
 const STORAGE_KEY = "projects_board_v1";
 
+/* ============================================================
+   MAIN COMPONENT
+============================================================ */
+
 export default function ProjectsBoard() {
   const [board, setBoard] = useState<Col[] | null>(null);
+
   const [editing, setEditing] = useState<{ columnIndex: number; taskIndex: number } | null>(null);
-  const [editingTask, setEditingTask] = useState<{ columnIndex: number; taskIndex: number } | null>(null);
+  const [editingTask, setEditingTask] = useState<{ columnIndex: number; taskIndex: number } | null>(
+    null
+  );
   const [creating, setCreating] = useState(false);
 
+  /* ------------------------------------
+     Load (with migrations)
+  ------------------------------------ */
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(STORAGE_KEY);
       let parsed: Col[] = raw ? JSON.parse(raw) : initialBoard;
 
       if (!Array.isArray(parsed)) parsed = initialBoard;
 
       let base = Date.now();
-      parsed = parsed.map(col => ({
+
+      parsed = parsed.map((col) => ({
         ...col,
-        items: col.items.map(it => ({
+        items: col.items.map((it) => ({
           ...it,
+          links: it.links ?? [],
+          attachments: it.attachments ?? [],
+          aiInsight: it.aiInsight ?? "",
+          description: it.description ?? "",
           createdAt: typeof it.createdAt === "number" ? it.createdAt : base++,
         })),
       }));
@@ -135,8 +145,9 @@ export default function ProjectsBoard() {
     }
   }
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
-
+  /* ------------------------------------
+     Sorting
+  ------------------------------------ */
   function sortColumn(col: Col): Col {
     return {
       ...col,
@@ -149,6 +160,11 @@ export default function ProjectsBoard() {
     };
   }
 
+  /* ------------------------------------
+     Drag & Drop
+  ------------------------------------ */
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
   function handleDragEnd(event: DragEndEvent) {
     if (!board) return;
 
@@ -158,103 +174,142 @@ export default function ProjectsBoard() {
     const id = String(active.id);
     const target = String(over.id);
 
-    const fromCol = board.findIndex(c => c.items.some(it => it.id === id));
-    if (fromCol === -1) return;
+    const fromCol = board.findIndex((c) => c.items.some((it) => it.id === id));
+    const toCol = board.findIndex((c) => c.title === target);
 
-    const source = board[fromCol];
-    const sourceIndex = source.items.findIndex(it => it.id === id);
-    const item = source.items[sourceIndex];
+    if (fromCol === -1 || toCol === -1 || fromCol === toCol) return;
 
-    const toCol = board.findIndex(c => c.title === target);
-    if (toCol === -1 || toCol === fromCol) return;
+    const taskIndex = board[fromCol].items.findIndex((it) => it.id === id);
+    if (taskIndex === -1) return;
+
+    const task = board[fromCol].items[taskIndex];
 
     const next = structuredClone(board);
-    next[fromCol].items.splice(sourceIndex, 1);
-    next[toCol].items.push(item);
+
+    next[fromCol].items.splice(taskIndex, 1);
+    next[toCol].items.push(task);
     next[toCol] = sortColumn(next[toCol]);
 
     persistBoard(next);
   }
 
   if (!board) {
-    return <section className="text-pure/50 mt-10 animate-pulse">Carregando quadro...</section>;
+    return <section className="text-pure/50 mt-10 animate-pulse">Carregando…</section>;
   }
 
-  const currentTask = editing ? board[editing.columnIndex].items[editing.taskIndex] : null;
+  const currentTask =
+    editing && board[editing.columnIndex]?.items[editing.taskIndex]
+      ? board[editing.columnIndex].items[editing.taskIndex]
+      : null;
 
+  /* ------------------------------------
+     Save GUT
+  ------------------------------------ */
   function updateGUT(values: GUTValues) {
     if (!editing) return;
+
+    const next = structuredClone(board);
     const { columnIndex, taskIndex } = editing;
 
-    const copy = structuredClone(board);
-    copy[columnIndex].items[taskIndex].gut = values;
-    copy[columnIndex] = sortColumn(copy[columnIndex]);
+    next[columnIndex].items[taskIndex].gut = values;
+    next[columnIndex] = sortColumn(next[columnIndex]);
 
-    persistBoard(copy);
+    persistBoard(next);
     setEditing(null);
   }
 
-  function updateTask({
-    title,
-    owner,
-    due,
-    columnIndex,
-    description,
-    attachments
-  }: {
+  /* ------------------------------------
+     Update Task
+  ------------------------------------ */
+  function updateTask(updated: {
     title: string;
     owner: string;
     due: string;
     columnIndex: number;
     description?: string;
     attachments?: UploadedFile[];
+    links?: LinkItem[];
+    aiInsight?: string;
   }) {
     if (!editingTask) return;
-  
+
     const next = structuredClone(board);
+
     const { columnIndex: oldCol, taskIndex } = editingTask;
     const task = next[oldCol].items[taskIndex];
-  
-    task.title = title;
-    task.owner = owner;
-    task.due = due;
-  
-    if (description !== undefined) task.description = description;
-    if (attachments !== undefined) task.attachments = attachments;
-  
-    if (oldCol !== columnIndex) {
+
+    task.title = updated.title;
+    task.owner = updated.owner;
+    task.due = updated.due;
+
+    if (updated.description !== undefined) task.description = updated.description;
+    if (updated.attachments !== undefined) task.attachments = updated.attachments;
+    if (updated.links !== undefined) task.links = updated.links;
+    if (updated.aiInsight !== undefined) task.aiInsight = updated.aiInsight;
+
+    if (oldCol !== updated.columnIndex) {
       next[oldCol].items.splice(taskIndex, 1);
-      next[columnIndex].items.push(task);
-      next[columnIndex] = sortColumn(next[columnIndex]);
+      next[updated.columnIndex].items.push(task);
+      next[updated.columnIndex] = sortColumn(next[updated.columnIndex]);
     }
-  
+
     persistBoard(next);
     setEditingTask(null);
   }
 
-  function addTask(task: { title: string; owner: string; due: string; gut: GUTValues; columnIndex: number }) {
+  /* ------------------------------------
+     Create Task
+  ------------------------------------ */
+  function addTask(task: {
+    title: string;
+    owner: string;
+    due: string;
+    gut: GUTValues;
+    columnIndex: number;
+    description?: string;
+    attachments?: UploadedFile[];
+    links?: LinkItem[];
+    aiInsight?: string;
+  }) {
     const next = structuredClone(board);
 
     next[task.columnIndex].items.push({
       id: crypto.randomUUID(),
-      ...task,
       createdAt: Date.now(),
+      ...task,
+      description: task.description ?? "",
+      attachments: task.attachments ?? [],
+      links: task.links ?? [],
+      aiInsight: task.aiInsight ?? "",
     });
 
     next[task.columnIndex] = sortColumn(next[task.columnIndex]);
+
     persistBoard(next);
   }
 
+  /* ------------------------------------
+     Delete Task
+  ------------------------------------ */
   function deleteTask(columnIndex: number, taskIndex: number) {
     const next = structuredClone(board);
     next[columnIndex].items.splice(taskIndex, 1);
     persistBoard(next);
   }
 
+  /* ============================================================
+     RENDER
+  ============================================================ */
+
   return (
     <section className="mx-auto max-w-7xl px-4 mt-10">
       <div className="flex justify-end mb-4">
-        <button onClick={() => setCreating(true)} className="px-4 py-2 bg-gold text-black rounded-lg hover:brightness-110 transition shadow-md shadow-gold/20">+ Novo Card</button>
+        <button
+          onClick={() => setCreating(true)}
+          className="px-4 py-2 bg-gold text-black rounded-lg hover:brightness-110 transition shadow-md shadow-gold/20"
+        >
+          + Novo Card
+        </button>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -264,66 +319,88 @@ export default function ProjectsBoard() {
               key={col.title}
               col={col}
               colIndex={colIndex}
-              onEditGUT={(taskIndex) => setEditing({ columnIndex: colIndex, taskIndex })}
               onEditTask={(taskIndex) => setEditingTask({ columnIndex: colIndex, taskIndex })}
+              onEditGUT={(taskIndex) => setEditing({ columnIndex: colIndex, taskIndex })}
               onDelete={deleteTask}
             />
           ))}
         </div>
       </DndContext>
 
-      <NewTaskModal open={creating} onClose={() => setCreating(false)} columns={board.map((b) => b.title)} onCreate={addTask} />
-
-      <GUTModal open={!!editing} onClose={() => setEditing(null)} taskTitle={currentTask?.title ?? ""} values={currentTask?.gut ?? { g: 1, u: 1, t: 1 }} onSave={updateGUT} />
-
+      {/* EDIT MODAL */}
       <EditTaskModal
         open={!!editingTask}
         onClose={() => setEditingTask(null)}
         initial={
           editingTask
             ? {
-                title: board[editingTask.columnIndex].items[editingTask.taskIndex].title,
-                owner: board[editingTask.columnIndex].items[editingTask.taskIndex].owner,
-                due: board[editingTask.columnIndex].items[editingTask.taskIndex].due,
-                gut: board[editingTask.columnIndex].items[editingTask.taskIndex].gut,
+                ...board[editingTask.columnIndex].items[editingTask.taskIndex],
                 columnIndex: editingTask.columnIndex,
-                description: board[editingTask.columnIndex].items[editingTask.taskIndex].description ?? "",
-                attachments: board[editingTask.columnIndex].items[editingTask.taskIndex].attachments ?? []
               }
             : null
         }
-        columns={board.map((b) => b.title)}
+        columns={board.map((c) => c.title)}
         onSave={updateTask}
+      />
+
+      {/* CREATE MODAL */}
+      <NewTaskModal
+        open={creating}
+        onClose={() => setCreating(false)}
+        columns={board.map((c) => c.title)}
+        onCreate={addTask}
+      />
+
+      {/* GUT MODAL */}
+      <GUTModal
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        taskTitle={currentTask?.title ?? ""}
+        values={currentTask?.gut ?? { g: 1, u: 1, t: 1 }}
+        onSave={updateGUT}
       />
     </section>
   );
 }
 
-/* ------------------------- COLUMN + TASK CARD ------------------------ */
+/* ============================================================
+   COLUMN
+============================================================ */
 
-function Column({ col, colIndex, onEditGUT, onEditTask, onDelete }: {
+function Column({
+  col,
+  colIndex,
+  onEditTask,
+  onEditGUT,
+  onDelete,
+}: {
   col: Col;
   colIndex: number;
-  onEditGUT: (taskIndex: number) => void;
   onEditTask: (taskIndex: number) => void;
+  onEditGUT: (taskIndex: number) => void;
   onDelete: (colIndex: number, taskIndex: number) => void;
 }) {
-  const badgeClass = BADGE_CLASS[col.color] || "badge-amber";
   const { setNodeRef, isOver } = useDroppable({ id: col.title });
+  const badgeClass = BADGE_CLASS[col.color] || "badge-amber";
 
-  const humanDate = (dateStr: string) => {
-    const d = new Date(dateStr);
+  const humanDate = (str: string) => {
+    const d = new Date(str);
     return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
   };
 
   return (
-    <div ref={setNodeRef}
-      className="card flex flex-col min-h-[240px] transition-colors flex-1 min-w-[280px]"
-      style={isOver ? {
-        outline: "1px dashed rgba(231,183,95,0.6)",
-        outlineOffset: 4,
-        background: "linear-gradient(to bottom, rgba(231,183,95,0.08), transparent)",
-      } : undefined}
+    <div
+      ref={setNodeRef}
+      className="card flex flex-col min-h-[240px] transition-colors"
+      style={
+        isOver
+          ? {
+              outline: "1px dashed rgba(231,183,95,0.6)",
+              outlineOffset: 4,
+              background: "linear-gradient(to bottom, rgba(231,183,95,0.08), transparent)",
+            }
+          : undefined
+      }
     >
       <header className="flex items-center justify-between mb-3 pb-2 border-b border-white/5">
         <h3 className="section-title">{col.title}</h3>
@@ -337,37 +414,49 @@ function Column({ col, colIndex, onEditGUT, onEditTask, onDelete }: {
             item={it}
             idx={idx}
             colIndex={colIndex}
-            onEdit={() => onEditTask(idx)}
+            onEdit={onEditTask}
             onEditGUT={onEditGUT}
             onDelete={onDelete}
             humanDate={humanDate}
           />
         ))}
 
-        {col.items.length === 0 && <li className="text-sm text-pure/40 italic mt-2">— sem itens —</li>}
+        {col.items.length === 0 && <li className="text-sm text-pure/40 italic">— sem itens —</li>}
       </ul>
     </div>
   );
 }
 
-/* ------------------------------- TASK CARD ------------------------------ */
+/* ============================================================
+   TASK CARD
+============================================================ */
 
-function TaskCard({ item, idx, colIndex, onEdit, onEditGUT, onDelete, humanDate }: {
+function TaskCard({
+  item,
+  idx,
+  colIndex,
+  onEdit,
+  onEditGUT,
+  onDelete,
+  humanDate,
+}: {
   item: Item;
   idx: number;
   colIndex: number;
   onEdit: (taskIndex: number) => void;
   onEditGUT: (taskIndex: number) => void;
-  onDelete: (colIndex: number, taskIndex: number) => void;
-  humanDate: (dateStr: string) => string;
+  onDelete: (colIdx: number, idx: number) => void;
+  humanDate: (d: string) => string;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: item.id });
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: item.id,
+  });
 
-  const style = {
+  const style: React.CSSProperties = {
     transform: transform ? CSS.Translate.toString(transform) : undefined,
-    opacity: isDragging ? 0.75 : 1,
+    opacity: isDragging ? 0.6 : 1,
     cursor: "grab",
-  } as React.CSSProperties;
+  };
 
   return (
     <li
@@ -376,59 +465,83 @@ function TaskCard({ item, idx, colIndex, onEdit, onEditGUT, onDelete, humanDate 
       {...attributes}
       {...listeners}
       onClick={(e) => {
-        if (isDragging) return;            // evita abrir modal se estiver arrastando
+        if (isDragging) return;
         e.stopPropagation();
         onEdit(idx);
       }}
-      className="rounded-lg border border-white/10 p-3 backdrop-blur-sm hover:border-gold/40 hover:shadow-[0_0_8px_rgba(231,183,95,0.2)] transition-all duration-150 flex flex-col gap-2"
+      className="rounded-lg border border-white/10 p-3 backdrop-blur-sm hover:border-gold/40 hover:shadow-[0_0_8px_rgba(231,183,95,0.2)] transition flex flex-col gap-2"
     >
-      {/* Título e Info */}
+      {/* TÍTULO */}
       <div>
-        <p className="font-medium text-pure/90 break-words hyphens-auto leading-snug text-[15px]">
-          {item.title}
-        </p>
-
-        <p className="text-[13px] text-pure/50 mt-1 flex items-center gap-2">
-          <span>👤 {item.owner}</span>
-          <span>•</span>
-          <span>📅 {humanDate(item.due)}</span>
+        <p className="font-medium text-pure/90 leading-snug">{item.title}</p>
+        <p className="text-[13px] text-pure/50 flex items-center gap-2 mt-1">
+          <span>👤 {item.owner}</span>•<span>📅 {humanDate(item.due)}</span>
         </p>
       </div>
 
-      {item.attachments && item.attachments.length > 0 && (
-        <div className="text-[12px] text-pure/60 mt-1 flex items-center gap-1">
-          📎 {item.attachments.length} arquivo(s)
+      {/* LINKS */}
+      {item.links && item.links.length > 0 && (
+        <div className="mt-1 flex flex-col gap-1">
+          {item.links.map((l) => (
+            <a
+              key={l.id}
+              href={l.url}
+              target="_blank"
+              className="text-[12px] text-[#f5d36c] hover:text-white transition"
+              style={{ textShadow: "0 0 4px rgba(245,211,108,0.35)" }}
+            >
+              🔗 {l.label}
+            </a>
+          ))}
         </div>
       )}
 
-      {/* Rodapé estilizado */}
+      {/* ANEXOS */}
+      {item.attachments && item.attachments.length > 0 && (
+        <div className="text-[12px] text-pure/60">📎 {item.attachments.length} arquivo(s)</div>
+      )}
+
+      {/* IA RESUMO */}
+      {item.aiInsight && (
+        <div className="text-[11px] text-pure/50 italic line-clamp-2 mt-1">
+          💡 {item.aiInsight}
+        </div>
+      )}
+
+      {/* FOOTER */}
       <div className="flex items-center justify-between pt-2 border-t border-white/10 mt-auto">
         <span className="text-[12px] text-pure/50">
           Prioridade:{" "}
-          <span className="text-gold font-semibold">
-            {item.gut.g * item.gut.u * item.gut.t}
-          </span>
+          <span className="text-gold font-semibold">{item.gut.g * item.gut.u * item.gut.t}</span>
         </span>
 
         <div className="flex gap-2">
           <button
-            onClick={(e) => { e.stopPropagation(); onEdit(idx); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(idx);
+            }}
             className="text-xs px-2 py-1 rounded-lg bg-white/10 text-pure/70 border border-white/10 hover:bg-white/20 transition"
           >
             Editar
           </button>
 
           <button
-            onClick={(e) => { e.stopPropagation(); onEditGUT(idx); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditGUT(idx);
+            }}
             className="text-xs px-2 py-1 rounded-lg bg-white/5 text-pure/60 border border-white/10 hover:bg-gold hover:text-black hover:border-gold transition"
           >
             GUT
           </button>
 
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(colIndex, idx); }}
-            className="text-xs px-2 py-1 rounded-lg font-semibold bg-red-900/30 text-red-300 border border-red-900/40 hover:bg-red-700/40 hover:text-red-200 hover:border-red-700/40 transition"
-            title="Excluir card"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(colIndex, idx);
+            }}
+            className="text-xs px-2 py-1 rounded-lg bg-red-900/30 text-red-300 border border-red-900/40 hover:bg-red-700/40 hover:text-red-200 transition"
           >
             🗑
           </button>
