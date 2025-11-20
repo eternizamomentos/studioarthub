@@ -11,8 +11,7 @@ export type KPI = {
     | "gold"
     | "premium"
     | "blue"
-    | "purple"
-    | string;   // fallback para total flexibilidade
+    | "purple";
   series?: number[];
 };
 
