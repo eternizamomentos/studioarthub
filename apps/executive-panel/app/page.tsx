@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-
 import Header from "@/components/Header";
 import MissionVision from "@/components/MissionVision";
 import KPIGrid from "@/components/KPIGrid";
@@ -11,63 +10,39 @@ import Quote from "@/components/Quote";
 import ETOSection from "@/components/ETO/ETOSection";
 import Footer from "@/components/Footer";
 
+// AQUI é o lugar correto
+import type { KPI } from "@/components/KPIGrid";
+
 import {
   fetchHealth,
   fetchKVList,
   fetchFinanceKPI,
 } from "./api-client";
 
-/* ============================================================
-   BADGES — literal types fix
-============================================================ */
+// ---------------------------------------------
+// FIX: Definição segura dos BADGES (literal types)
+// ---------------------------------------------
 const BADGES = {
   green: "green",
   amber: "amber",
-  red:   "red",
+  red: "red",
 } as const;
 
-/* ============================================================
-   HELPERS
-============================================================ */
-
-// Garante que o gráfico tenha sempre 7 pontos
-function ensure7(values: number[] | undefined): number[] {
-  if (!Array.isArray(values)) return Array(7).fill(0);
-  if (values.length >= 7) return values.slice(-7);
-  
-  const missing = 7 - values.length;
-  return [...Array(missing).fill(0), ...values];
-}
-
-// Formata números centavos → R$ normal
-function brl(cents: number | undefined): string {
-  if (!cents) return "R$ —";
-  return `R$ ${(cents / 100).toLocaleString("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
-/* ============================================================
-   PAGE COMPONENT
-============================================================ */
-
 export default function Page() {
-  const [version] = useState("0.2.0-premium");
-  import type { KPI } from "@/components/KPIGrid";
+  const [version] = useState("0.1.0");
 
+  // ---------------------------------------------
+  // FIX: Estado inicial tipado com BADGES (literal)
+  // ---------------------------------------------
   const [kpis, setKpis] = useState<KPI[]>([
-    { label: "Receita (mês)",       value: "R$ —", badge: BADGES.amber, series: Array(7).fill(0) },
-    { label: "PIX pagos (30d)",      value: "—",    badge: BADGES.amber, series: Array(7).fill(0) },
-    { label: "Cartões pagos (30d)",  value: "—",    badge: BADGES.amber, series: Array(7).fill(0) },
-    { label: "Ticket médio (30d)",   value: "R$ —", badge: BADGES.amber, series: Array(7).fill(0) },
-    { label: "Taxa de erro PIX",     value: "—%",   badge: BADGES.amber, series: Array(7).fill(0) },
-    { label: "Latência Pagar.me",    value: "— ms", badge: BADGES.amber, series: [12,28,40,33,22,19,25] },
+    { label: "Receita (mês)", value: "R$ —", badge: BADGES.amber, series: Array(7).fill(0) },
+    { label: "PIX pagos (30d)", value: "—", badge: BADGES.green, series: Array(7).fill(0) },
+    { label: "Ticket médio (30d)", value: "R$ —", badge: BADGES.amber, series: Array(7).fill(0) },
+    { label: "Taxa de erro PIX", value: "—%", badge: BADGES.amber, series: [1, 1, 2, 1, 2, 3, 2] },
+    { label: "Latência Pagar.me", value: "— ms", badge: BADGES.amber, series: [30,25,40,33,29,31,28] },
+    { label: "Cartões pagos (30d)", value: "—", badge: BADGES.amber, series: Array(7).fill(0) },
   ]);
 
-  /* ============================================================
-     REFRESH — otimizado, limpo e resiliente
-  ============================================================ */
   const refresh = useCallback(async () => {
     try {
       const [health, kv, finance] = await Promise.all([
@@ -76,33 +51,56 @@ export default function Page() {
         fetchFinanceKPI(),
       ]);
 
-      const m = finance?.metrics;
+      const metrics = finance?.metrics;
 
-      const pixPaid30d = m?.pix_paid_30d ?? 0;
-      const pixError   = m?.pix_error_rate ?? 0;
+      const pixPaid30d = metrics?.pix_paid_30d ?? 0;
 
-      const receitaMes = brl(m?.month_gross_cents);
-      const ticketMedio = brl(m?.avg_ticket_30d_cents);
+      const pixErrorRate =
+        typeof metrics?.pix_error_rate === "number"
+          ? metrics.pix_error_rate
+          : 0;
 
+      const monthGrossCents = metrics?.month_gross_cents ?? 0;
+      const avgTicketCents = metrics?.avg_ticket_30d_cents ?? 0;
+
+      const receitaMes =
+        metrics
+          ? `R$ ${(monthGrossCents / 100).toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`
+          : "R$ —";
+
+      const ticketMedio =
+        metrics
+          ? `R$ ${(avgTicketCents / 100).toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`
+          : "R$ —";
+
+      // ---------------------------------------------
+      // FIX: TODAS AS BADGES convertidas para literal
+      // ---------------------------------------------
       setKpis([
         {
           label: "Receita (mês)",
           value: receitaMes,
-          badge: m?.month_gross_cents ? BADGES.green : BADGES.amber,
-          series: ensure7([
-            m?.month_gross_cents ? m.month_gross_cents / 100 : 0,
-            m?.month_gross_cents ? m.month_gross_cents / 100 : 0,
-            m?.month_gross_cents ? m.month_gross_cents / 100 : 0,
-            m?.month_gross_cents ? m.month_gross_cents / 100 : 0,
-            0, 0, 0,
-          ]),
+          badge: monthGrossCents > 0 ? BADGES.green : BADGES.amber,
+          series: [
+            monthGrossCents/100,
+            monthGrossCents/100,
+            monthGrossCents/100,
+            monthGrossCents/100,
+            0,0,0
+          ],
         },
 
         {
           label: "PIX pagos (30d)",
           value: String(pixPaid30d),
           badge: pixPaid30d > 0 ? BADGES.green : BADGES.amber,
-          series: ensure7([
+          series: [
             pixPaid30d * 0.1,
             pixPaid30d * 0.3,
             pixPaid30d * 0.6,
@@ -110,68 +108,65 @@ export default function Page() {
             pixPaid30d,
             pixPaid30d * 0.7,
             pixPaid30d * 0.4,
-          ]),
+          ],
         },
 
         {
           label: "Cartões pagos (30d)",
-          value: String(m?.cc_orders_30d ?? 0),
-          badge: (m?.cc_orders_30d ?? 0) > 0 ? BADGES.green : BADGES.amber,
-          series: ensure7(m?.cc_daily),
+          value: String(metrics?.cc_orders_30d ?? 0),
+          badge: (metrics?.cc_orders_30d ?? 0) > 0 ? BADGES.green : BADGES.amber,
+          series: (metrics?.cc_daily ?? []).slice(-7),
         },
 
         {
           label: "Ticket médio (30d)",
           value: ticketMedio,
-          badge: (m?.avg_ticket_30d_cents ?? 0) > 0 ? BADGES.green : BADGES.amber,
-          series: ensure7([
-            (m?.avg_ticket_30d_cents ?? 0) / 100,
-            (m?.avg_ticket_30d_cents ?? 0) / 100,
-            (m?.avg_ticket_30d_cents ?? 0) / 100,
-            0,0,0,0,
-          ]),
+          badge: avgTicketCents > 0 ? BADGES.green : BADGES.amber,
+          series: [
+            avgTicketCents/100,
+            avgTicketCents/100,
+            avgTicketCents/100,
+            0,0,0,0
+          ],
         },
 
         {
           label: "Taxa de erro PIX",
-          value: `${(pixError * 100).toFixed(1)}%`,
-          badge: pixError > 0 ? BADGES.amber : BADGES.green,
-          series: ensure7([
-            pixError * 0.1,
-            pixError * 0.3,
-            pixError * 0.6,
-            pixError * 0.9,
-            pixError,
-            pixError * 0.7,
-            pixError * 0.4,
-          ]),
+          value: pixErrorRate > 0
+            ? `${(pixErrorRate * 100).toFixed(1)}%`
+            : "0%",
+          badge: pixErrorRate > 0 ? BADGES.amber : BADGES.green,
+          series: [
+            pixErrorRate * 0.1,
+            pixErrorRate * 0.3,
+            pixErrorRate * 0.6,
+            pixErrorRate * 0.9,
+            pixErrorRate,
+            pixErrorRate * 0.7,
+            pixErrorRate * 0.4,
+          ],
         },
 
         {
           label: "Latência Pagar.me",
           value: "— ms",
           badge: BADGES.amber,
-          series: ensure7([12, 28, 40, 33, 22, 19, 25]),
+          series: [12,28,40,33,22,19,25],
         },
       ]);
+
     } catch (e) {
       console.error("Refresh fail:", e);
     }
   }, []);
 
-  /* ============================================================
-     CARREGAMENTO INICIAL
-  ============================================================ */
   useEffect(() => {
-    refresh();
+    void refresh();
   }, [refresh]);
 
-  /* ============================================================
-     RENDER
-  ============================================================ */
   return (
     <main>
-      <Header onRefresh={refresh} />
+      <Header onRefresh={() => void refresh()} />
       <MissionVision />
       <ETOSection />
       <KPIGrid data={kpis} />
