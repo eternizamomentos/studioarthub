@@ -61,26 +61,10 @@ type Col = { title: string; color: string; items: Item[] };
 ============================================================ */
 
 const initialBoard: Col[] = [
-  {
-    title: "Pendente",
-    color: "amber",
-    items: [],
-  },
-  {
-    title: "Em Execução",
-    color: "blush",
-    items: [],
-  },
-  {
-    title: "Concluído",
-    color: "green",
-    items: [],
-  },
-  {
-    title: "Atrasado",
-    color: "red",
-    items: [],
-  },
+  { title: "Pendente",      color: "amber", items: [] },
+  { title: "Em Execução",   color: "blush", items: [] },
+  { title: "Concluído",     color: "green", items: [] },
+  { title: "Atrasado",      color: "red",   items: [] },
 ];
 
 const BADGE_CLASS: Record<string, string> = {
@@ -97,38 +81,40 @@ const STORAGE_KEY = "projects_board_v1";
 ============================================================ */
 
 export default function ProjectsBoard() {
-  const [board, setBoard] = useState<Col[] | null>(null);
+  const [board, setBoard] = useState<Col[]>(initialBoard);
 
   const [editing, setEditing] = useState<{ columnIndex: number; taskIndex: number } | null>(null);
-  const [editingTask, setEditingTask] = useState<{ columnIndex: number; taskIndex: number } | null>(
-    null
-  );
+  const [editingTask, setEditingTask] = useState<{ columnIndex: number; taskIndex: number } | null>(null);
   const [creating, setCreating] = useState(false);
 
   /* ------------------------------------
-     Load (with migrations)
+     Load (with migrations + fail-safe)
   ------------------------------------ */
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      let parsed: Col[] = raw ? JSON.parse(raw) : initialBoard;
+      let parsed = raw ? JSON.parse(raw) : initialBoard;
 
       if (!Array.isArray(parsed)) parsed = initialBoard;
+      if (parsed.length !== initialBoard.length) parsed = initialBoard;
 
       let base = Date.now();
 
-      parsed = parsed.map((col) => ({
-        ...col,
-        items: col.items.map((it) => ({
-          ...it,
-          links: it.links ?? [],
-          attachments: it.attachments ?? [],
-          aiInsight: it.aiInsight ?? "",
-          description: it.description ?? "",
-          createdAt: typeof it.createdAt === "number" ? it.createdAt : base++,
-        })),
+      parsed = parsed.map((col, i) => ({
+        title: initialBoard[i]?.title ?? col.title ?? "Coluna",
+        color: initialBoard[i]?.color ?? col.color ?? "amber",
+        items: Array.isArray(col.items)
+          ? col.items.map((it: Item) => ({
+              ...it,
+              links: it.links ?? [],
+              attachments: it.attachments ?? [],
+              aiInsight: it.aiInsight ?? "",
+              description: it.description ?? "",
+              createdAt: typeof it.createdAt === "number" ? it.createdAt : base++,
+            }))
+          : [],
       }));
 
       setBoard(parsed);
@@ -163,11 +149,12 @@ export default function ProjectsBoard() {
   /* ------------------------------------
      Drag & Drop
   ------------------------------------ */
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   function handleDragEnd(event: DragEndEvent) {
-    if (!board) return;
-
     const { active, over } = event;
     if (!over) return;
 
@@ -177,39 +164,35 @@ export default function ProjectsBoard() {
     const fromCol = board.findIndex((c) => c.items.some((it) => it.id === id));
     const toCol = board.findIndex((c) => c.title === target);
 
-    if (fromCol === -1 || toCol === -1 || fromCol === toCol) return;
+    if (fromCol < 0 || toCol < 0 || fromCol === toCol) return;
 
     const taskIndex = board[fromCol].items.findIndex((it) => it.id === id);
-    if (taskIndex === -1) return;
-
-    const task = board[fromCol].items[taskIndex];
+    if (taskIndex < 0) return;
 
     const next = structuredClone(board);
+    if (!next[fromCol] || !next[toCol]) return;
 
+    const task = next[fromCol].items[taskIndex];
     next[fromCol].items.splice(taskIndex, 1);
     next[toCol].items.push(task);
+
     next[toCol] = sortColumn(next[toCol]);
 
     persistBoard(next);
   }
 
-  if (!board) {
-    return <section className="text-pure/50 mt-10 animate-pulse">Carregando…</section>;
-  }
-
-  const currentTask =
-    editing && board[editing.columnIndex]?.items[editing.taskIndex]
-      ? board[editing.columnIndex].items[editing.taskIndex]
-      : null;
-
   /* ------------------------------------
-     Save GUT
+     GUT UPDATE (CORRIGIDO)
   ------------------------------------ */
   function updateGUT(values: GUTValues) {
     if (!editing) return;
 
-    const next = structuredClone(board);
     const { columnIndex, taskIndex } = editing;
+
+    const next = structuredClone(board);
+
+    if (!next[columnIndex]) return;
+    if (!next[columnIndex].items[taskIndex]) return;
 
     next[columnIndex].items[taskIndex].gut = values;
     next[columnIndex] = sortColumn(next[columnIndex]);
@@ -219,7 +202,7 @@ export default function ProjectsBoard() {
   }
 
   /* ------------------------------------
-     Update Task
+     TASK UPDATE (CORRIGIDO)
   ------------------------------------ */
   function updateTask(updated: {
     title: string;
@@ -236,6 +219,9 @@ export default function ProjectsBoard() {
     const next = structuredClone(board);
 
     const { columnIndex: oldCol, taskIndex } = editingTask;
+
+    if (!next[oldCol] || !next[oldCol].items[taskIndex]) return;
+
     const task = next[oldCol].items[taskIndex];
 
     task.title = updated.title;
@@ -258,7 +244,7 @@ export default function ProjectsBoard() {
   }
 
   /* ------------------------------------
-     Create Task
+     CREATE TASK (CORRIGIDO)
   ------------------------------------ */
   function addTask(task: {
     title: string;
@@ -273,6 +259,8 @@ export default function ProjectsBoard() {
   }) {
     const next = structuredClone(board);
 
+    if (!next[task.columnIndex]) return;
+
     next[task.columnIndex].items.push({
       id: crypto.randomUUID(),
       createdAt: Date.now(),
@@ -284,22 +272,29 @@ export default function ProjectsBoard() {
     });
 
     next[task.columnIndex] = sortColumn(next[task.columnIndex]);
-
     persistBoard(next);
   }
 
   /* ------------------------------------
-     Delete Task
+     DELETE TASK (CORRIGIDO)
   ------------------------------------ */
   function deleteTask(columnIndex: number, taskIndex: number) {
     const next = structuredClone(board);
+    if (!next[columnIndex]) return;
+    if (!next[columnIndex].items[taskIndex]) return;
+
     next[columnIndex].items.splice(taskIndex, 1);
     persistBoard(next);
   }
 
   /* ============================================================
      RENDER
-  ============================================================ */
+============================================================ */
+
+  const currentTask =
+    editing && board[editing.columnIndex]?.items[editing.taskIndex]
+      ? board[editing.columnIndex].items[editing.taskIndex]
+      : null;
 
   return (
     <section className="mx-auto max-w-7xl px-4 mt-10">
