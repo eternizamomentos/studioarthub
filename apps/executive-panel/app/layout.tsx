@@ -8,12 +8,21 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body className="bg-legalNavy text-legalPure font-text antialiased">
-        <div className="min-h-screen flex flex-col">
-          <main className="flex-grow">{children}</main>
-          {/* <Footer /> se existir */}
-        </div>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body
+        className="
+          bg-legalNavy 
+          text-legalPure 
+          font-text 
+          antialiased 
+          min-h-screen 
+          flex flex-col
+        "
+      >
+        {/* futuro: Sidebar / Navbar / Modais globais */}
+        <main className="flex-grow">{children}</main>
+
+        <div id="modal-root" />
       </body>
     </html>
   );

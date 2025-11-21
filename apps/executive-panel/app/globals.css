@@ -1,150 +1,176 @@
-/* ================================================
-   GLOBAL EXECUTIVE PANEL THEME — PREMIUM RESTORE
-   TailwindCSS v4 Compatible + Glass UI
-================================================ */
+/* ============================================================
+   GLOBAL EXECUTIVE PANEL THEME — PREMIUM v2
+   Revisado, unificado e otimizado segundo auditoria
+   Studio Art Hub — Painel Executivo
+   TailwindCSS v4 / Glass UI / Deep Navy
+============================================================ */
 
 @import "tailwindcss";
 
-/* Brand & Visual Tokens */
+/* ============================================================
+   DESIGN TOKENS — UNIFICADOS
+============================================================ */
 @theme {
-  /* BRAND */
+  /* BRAND CORE */
   --color-gold: #E7B75F;
   --color-gold-soft: #F3E4BE;
+
   --color-rose: #E9B8C7;
   --color-raspberry: #C7355D;
-  --color-navy: #101828;
-  --color-bg: #0B1220;
-  --color-bg-soft: rgba(11,18,32,0.65);
-  --color-card: rgba(17,25,40,0.55);
+
+  /* NAVY SYSTEM */
+  --color-navy-900: #0B1220;
+  --color-navy-800: #101828;
+  --color-navy-soft: rgba(11,18,32,0.65);
+
+  /* UI SURFACES */
+  --color-surface-card: rgba(17,25,40,0.55);
+  --color-surface-card-strong: rgba(13,18,32,0.55);
+
   --color-border: rgba(255,255,255,0.08);
+
+  /* SEMANTIC COLORS */
   --color-success: #2ECC71;
   --color-warning: #F2C94C;
   --color-danger: #EA5455;
   --color-pure: #FFFFFF;
 
-  /* FONTS */
+  /* TYPOGRAPHY */
   --font-title: "Playfair Display", Georgia, serif;
   --font-text: "Inter", system-ui, sans-serif;
 
-  /* SHADOWS */
-  --shadow-card: 0 8px 24px rgba(0,0,0,0.25);
+  /* DEPTH SYSTEM */
+  --shadow-card: 0 12px 28px rgba(0,0,0,0.45);
+  --shadow-soft: 0 8px 20px rgba(0,0,0,0.30);
 
-  /* BLUR */
-  --blur-card: blur(12px);
+  /* GLASS BLUR */
+  --blur-card: blur(14px) saturate(140%);
 }
 
-/* Base reset */
+/* ============================================================
+   BASE RESET
+============================================================ */
+
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--color-bg);
+  background: var(--color-navy-900);
   color: var(--color-pure);
   font-family: var(--font-text);
   -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
 }
 
-/* Links */
+/* Global link behavior */
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* Executive Card (original premium style) */
-.card {
-  background: var(--color-card);
-  backdrop-filter: var(--blur-card);
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  padding: 1.4rem;
-  box-shadow: var(--shadow-card);
-}
-
-/* Section Title */
-.section-title {
-  font-family: var(--font-title);
-  font-size: 1.75rem;
-  color: var(--color-gold);
-  letter-spacing: 0.6px;
-  font-weight: 600;
-}
-
-/* Progress bar (premium) */
-.progress-track {
-  width: 100%;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.09);
-}
-
-.progress-bar {
-  height: 6px;
-  border-radius: 999px;
-  background: var(--color-gold);
-}
-
-/* Soft label */
-.label-muted {
-  color: rgba(255,255,255,0.55);
-  font-size: 0.85rem;
-}
-
-/* Title brand gradient */
-.title-gradient {
-  background: linear-gradient(90deg, var(--color-gold), var(--color-gold-soft));
-  -webkit-background-clip: text;
-  color: transparent;
-}
+/* ============================================================
+   BACKGROUND ATMOSPHERE (Radial + Noise Premium)
+============================================================ */
 
 body {
-  background: radial-gradient(circle at top, #0d1220 0%, #070b13 60%, #05070c 100%);
+  background: radial-gradient(
+      circle at top,
+      #0d1220 0%,
+      #09111d 55%,
+      #05070c 100%
+    );
   background-attachment: fixed;
+  position: relative;
 }
 
-/* Add subtle noise texture */
+/* Subtle noise (optimized) */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   background: url("data:image/png;base64,iVBORw0K...") repeat;
-  opacity: 0.06;
+  opacity: 0.045;     /* otimizado */
+  mix-blend-mode: soft-light;
+  z-index: 0;
 }
 
-/* Premium card (Glass Deep Navy) */
-.card, .panel-card, .block-card {
-  background: rgba(13, 18, 32, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+/* ============================================================
+   EXECUTIVE CARDS (Unificados)
+============================================================ */
+.card,
+.panel-card,
+.block-card {
+  background: var(--color-surface-card-strong);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  padding: 1.4rem;
+  backdrop-filter: var(--blur-card);
+  -webkit-backdrop-filter: var(--blur-card);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  z-index: 1;
 }
 
-/* Section titles */
+/* ============================================================
+   SECTION TITLE (Unificado + Premium Gradient)
+============================================================ */
 .section-title {
-  font-family: "Playfair Display", serif;
+  font-family: var(--font-title);
   font-weight: 700;
+  font-size: 1.75rem;
   letter-spacing: 0.3px;
-  background: linear-gradient(90deg, #e7b75f, #f2e3b0);
+  background: linear-gradient(90deg, var(--color-gold), var(--color-gold-soft));
   -webkit-background-clip: text;
   color: transparent;
+  margin-bottom: 0.25rem;
 }
 
-/* Progress bar premium */
-.progress-track {
-  background: rgba(255,255,255,0.08);
-  border-radius: 8px;
+/* ============================================================
+   TEXT / LABELS
+============================================================ */
+.label-muted {
+  color: rgba(255,255,255,0.55);
+  font-size: 0.85rem;
 }
-.progress-fill {
-  background: #e7b75f;
+
+/* ============================================================
+   PROGRESS BAR (Premium)
+============================================================ */
+.progress-track {
+  width: 100%;
+  height: 6px;
   border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+}
+
+.progress-fill {
+  height: 6px;
+  border-radius: 8px;
+  background: var(--color-gold);
   box-shadow: 0 0 6px rgba(231,183,95,0.9);
 }
 
-/* Slider thumb aesthetic gold */
+/* ============================================================
+   RANGE THUMB (Gold Aesthetic)
+============================================================ */
 input[type="range"]::-webkit-slider-thumb {
-  background: #e7b75f;
-  border: 2px solid #fff3;
+  background: var(--color-gold);
+  border: 2px solid #ffffff22;
   box-shadow: 0 0 6px rgba(231,183,95,0.85);
+  border-radius: 50%;
+}
+
+/* ============================================================
+   UTILITY CLASSES
+============================================================ */
+.text-gold {
+  color: var(--color-gold);
+}
+
+.bg-gold {
+  background: var(--color-gold);
+}
+
+.border-gold {
+  border-color: var(--color-gold);
 }

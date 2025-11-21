@@ -21,20 +21,26 @@ export default function GUTModal({
   onClose,
   taskTitle,
   values,
-  onSave
+  onSave,
 }: Props) {
   const [localValues, setLocalValues] = useState(values);
 
-  // Sync caso abra modal com valores novos
+  /* ============================================================
+     Sync + Scroll Lock
+  ============================================================ */
   useEffect(() => {
     if (open) {
       setLocalValues(values);
-      document.body.style.overflow = "hidden"; // trava scroll
+      document.body.style.overflow = "hidden";
     }
-    return () => { document.body.style.overflow = "auto"; };
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [open, values]);
 
   if (!open) return null;
+
+  const priority = localValues.g * localValues.u * localValues.t;
 
   function handleBackdrop(e: React.MouseEvent) {
     if (e.target === e.currentTarget) onClose();
@@ -44,43 +50,51 @@ export default function GUTModal({
     setLocalValues((prev) => ({ ...prev, [key]: v }));
   }
 
-  const priority = localValues.g * localValues.u * localValues.t;
-
+  /* ============================================================
+     RENDER
+  ============================================================ */
   return (
     <div
-      onClick={handleBackdrop}
       role="dialog"
       aria-modal="true"
+      onClick={handleBackdrop}
       className="
         fixed inset-0 z-50 flex items-center justify-center
-        bg-black/60 backdrop-blur-sm
+        bg-black/70 backdrop-blur-md
         animate-fadeIn
       "
     >
       <div
         className="
-          card relative max-w-md w-full p-6 border border-gold/30
-          shadow-xl shadow-gold/10 bg-[#0D1220]
+          card relative w-full max-w-md p-6
+          bg-[rgba(13,18,32,0.55)]
+          border border-white/10 rounded-xl
+          shadow-xl shadow-black/40
           animate-scaleIn
         "
       >
-        {/* Close */}
+        {/* Close button */}
         <button
           onClick={onClose}
           className="
-            absolute right-4 top-4 text-pure/50 hover:text-pure/80 
-            transition text-xl
+            absolute right-4 top-4 text-pure/50 
+            hover:text-pure/80 transition text-xl
           "
         >
           ×
         </button>
 
-        <h2 className="section-title mb-2">Editar Prioridade GUT</h2>
+        {/* TITLE */}
+        <h2 className="section-title mb-2 text-[1.65rem]">
+          Prioridade GUT
+        </h2>
 
-        <p className="text-pure/70 text-sm mb-4">
-          Tarefa: <span className="text-gold font-medium">{taskTitle}</span>
+        <p className="text-pure/70 text-sm mb-5">
+          Tarefa:{" "}
+          <span className="text-gold font-semibold">{taskTitle}</span>
         </p>
 
+        {/* Fields */}
         <GUTField
           label="Gravidade (G)"
           value={localValues.g}
@@ -99,19 +113,23 @@ export default function GUTModal({
           onSelect={(v) => setVal("t", v)}
         />
 
+        {/* Priority preview */}
         <div className="mt-6 text-pure/80 text-sm">
-          Prioridade Calculada (G × U × T):
-          <span className="text-gold font-semibold ml-2 text-base">
+          Prioridade (G × U × T):
+          <span className="text-gold font-bold ml-2 text-lg">
             {priority}
           </span>
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
+        {/* Footer buttons */}
+        <div className="flex justify-end gap-3 mt-7">
           <button
             onClick={onClose}
             className="
-              px-4 py-2 rounded-lg border border-white/10 
-              text-pure/60 hover:text-pure/80 hover:bg-white/5 transition
+              px-4 py-2 text-sm rounded-lg 
+              border border-white/10
+              text-pure/60 hover:text-pure/80 hover:bg-white/5
+              transition
             "
           >
             Cancelar
@@ -120,8 +138,10 @@ export default function GUTModal({
           <button
             onClick={() => onSave(localValues)}
             className="
-              px-4 py-2 rounded-lg bg-gold text-black 
-              hover:brightness-110 transition
+              px-4 py-2 text-sm rounded-lg 
+              bg-gold text-black 
+              hover:brightness-110
+              transition shadow-md shadow-gold/20
             "
           >
             Salvar
@@ -132,20 +152,20 @@ export default function GUTModal({
   );
 }
 
-// =========================
-//  Subcomponente (GUTField)
-// =========================
+/* ============================================================
+   GUTField (subcomponente Premium)
+============================================================ */
 function GUTField({
   label,
   value,
-  onSelect
+  onSelect,
 }: {
   label: string;
   value: number;
   onSelect: (v: number) => void;
 }) {
   return (
-    <div className="mb-4">
+    <div className="mb-5">
       <p className="text-pure/80 text-sm mb-2">{label}</p>
 
       <div className="flex gap-2">
@@ -154,10 +174,13 @@ function GUTField({
             key={n}
             onClick={() => onSelect(n)}
             className={`
-              w-9 h-9 rounded-lg border text-sm font-medium transition 
-              ${value === n 
-                ? "bg-gold text-black border-gold shadow-md shadow-gold/20" 
-                : "bg-white/5 text-pure/60 border-white/10 hover:bg-white/10"}
+              w-9 h-9 rounded-lg text-sm font-medium transition
+              border
+              ${
+                value === n
+                  ? "bg-gold text-black border-gold shadow-md shadow-gold/20"
+                  : "bg-white/5 text-pure/60 border-white/10 hover:bg-white/10"
+              }
             `}
           >
             {n}
