@@ -10,14 +10,10 @@ import Quote from "@/components/Quote";
 import ETOSection from "@/components/ETO/ETOSection";
 import Footer from "@/components/Footer";
 
-// AQUI é o lugar correto
+// IMPORTAR O TIPO AQUI
 import type { KPI } from "@/components/KPIGrid";
 
-import {
-  fetchHealth,
-  fetchKVList,
-  fetchFinanceKPI,
-} from "./api-client";
+import { fetchHealth, fetchKVList, fetchFinanceKPI } from "./api-client";
 
 // ---------------------------------------------
 // FIX: Definição segura dos BADGES (literal types)
@@ -29,18 +25,15 @@ const BADGES = {
 } as const;
 
 export default function Page() {
-  const [version] = useState("0.1.0");
+  const [version] = useState("0.2.0-premium");
 
-  // ---------------------------------------------
-  // FIX: Estado inicial tipado com BADGES (literal)
-  // ---------------------------------------------
   const [kpis, setKpis] = useState<KPI[]>([
-    { label: "Receita (mês)", value: "R$ —", badge: BADGES.amber, series: Array(7).fill(0) },
-    { label: "PIX pagos (30d)", value: "—", badge: BADGES.green, series: Array(7).fill(0) },
-    { label: "Ticket médio (30d)", value: "R$ —", badge: BADGES.amber, series: Array(7).fill(0) },
-    { label: "Taxa de erro PIX", value: "—%", badge: BADGES.amber, series: [1, 1, 2, 1, 2, 3, 2] },
-    { label: "Latência Pagar.me", value: "— ms", badge: BADGES.amber, series: [30,25,40,33,29,31,28] },
-    { label: "Cartões pagos (30d)", value: "—", badge: BADGES.amber, series: Array(7).fill(0) },
+    { label: "Receita (mês)",      value: "R$ —", badge: "amber", series: Array<number>(7).fill(0) },
+    { label: "PIX pagos (30d)",    value: "—",    badge: "green", series: Array<number>(7).fill(0) },
+    { label: "Ticket médio (30d)", value: "R$ —", badge: "amber", series: Array<number>(7).fill(0) },
+    { label: "Taxa de erro PIX",   value: "—%",   badge: "amber", series: [1, 1, 2, 1, 2, 3, 2] },
+    { label: "Latência Pagar.me",  value: "— ms", badge: "amber", series: [30, 25, 40, 33, 29, 31, 28] },
+    { label: "Cartões pagos (30d)",value: "—",    badge: "amber", series: Array<number>(7).fill(0) },
   ]);
 
   const refresh = useCallback(async () => {
@@ -115,7 +108,7 @@ export default function Page() {
           label: "Cartões pagos (30d)",
           value: String(metrics?.cc_orders_30d ?? 0),
           badge: (metrics?.cc_orders_30d ?? 0) > 0 ? BADGES.green : BADGES.amber,
-          series: (metrics?.cc_daily ?? []).slice(-7),
+          series: (metrics?.cc_daily ?? []).slice(-7) as number[],
         },
 
         {
