@@ -34,7 +34,7 @@ type Props = {
     description?: string;
     attachments?: UploadedFile[];
     links?: LinkItem[];
-    aiInsight?: string;              // ⬅ NOVO
+    aiInsight?: string;
   } | null;
   columns: string[];
   onSave: (edited: {
@@ -45,7 +45,7 @@ type Props = {
     description?: string;
     attachments?: UploadedFile[];
     links?: LinkItem[];
-    aiInsight?: string;             // ⬅ NOVO
+    aiInsight?: string;
   }) => void;
 };
 
@@ -66,7 +66,7 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
   const [description, setDescription] = useState(initial.description ?? "");
   const [attachments, setAttachments] = useState<UploadedFile[]>(initial.attachments ?? []);
   const [links, setLinks] = useState<LinkItem[]>(initial.links ?? []);
-  const [aiInsight, setAiInsight] = useState(initial.aiInsight ?? "");   // ⬅ ADICIONADO
+  const [aiInsight, setAiInsight] = useState(initial.aiInsight ?? "");
 
   /* Links */
   const [newLinkLabel, setNewLinkLabel] = useState("");
@@ -88,7 +88,7 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
     setDescription(initial.description ?? "");
     setAttachments(initial.attachments ?? []);
     setLinks(initial.links ?? []);
-    setAiInsight(initial.aiInsight ?? "");        // ⬅ AGORA CARREGA NORMALMENTE
+    setAiInsight(initial.aiInsight ?? "");
   }, [initial]);
 
   const ready = title.trim() !== "" && owner.trim() !== "" && due.trim() !== "";
@@ -154,6 +154,11 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
 
     await new Promise(r => setTimeout(r, 1100));
 
+    const gutScore =
+      initial?.gut
+        ? initial.gut.g * initial.gut.u * initial.gut.t
+        : 0;
+
     const insight = `
 🧠 ANÁLISE INTELIGENTE DA TAREFA
 
@@ -162,7 +167,7 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
   ${description ? "Há uma descrição detalhada da tarefa." : "Descrição ausente — considere incluir mais contexto."}
 
 • Prioridade via GUT:
-  Pontuação: ${initial.gut.g * initial.gut.u * initial.gut.t}
+  Pontuação: ${gutScore}
 
 • Recomendações:
   - Revisar requisitos principais
@@ -193,7 +198,7 @@ export default function EditTaskModal({ open, onClose, initial, columns, onSave 
       description: description.trim(),
       attachments,
       links,
-      aiInsight,               // ⬅ SALVANDO A INSIGHT DA IA
+      aiInsight,
     });
 
     closeModal();
