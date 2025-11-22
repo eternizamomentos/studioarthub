@@ -1,8 +1,7 @@
 /* ============================================================
-   GLOBAL EXECUTIVE PANEL THEME — PREMIUM v2
-   Revisado, unificado e otimizado segundo auditoria
+   GLOBAL EXECUTIVE PANEL THEME — PREMIUM v3
+   Corrigido e blindado
    Studio Art Hub — Painel Executivo
-   TailwindCSS v4 / Glass UI / Deep Navy
 ============================================================ */
 
 @import "tailwindcss";
@@ -48,29 +47,40 @@
 }
 
 /* ============================================================
-   BASE RESET
+   BASE RESET (SAFE)
 ============================================================ */
 
 html, body {
   margin: 0;
   padding: 0;
+
+  /* fundo principal */
   background: var(--color-navy-900);
+
+  /* texto global */
   color: var(--color-pure);
   font-family: var(--font-text);
+
   -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
+
+  /* ❗ Correção importante:
+     NÃO definir z-index no body.
+     Isso evita conflitos com overlays (sidebar / modals). */
+  position: relative;
 }
 
-/* Global link behavior */
+/* links */
 a {
   color: inherit;
   text-decoration: none;
 }
 
 /* ============================================================
-   BACKGROUND ATMOSPHERE (Radial + Noise Premium)
+   BACKGROUND ATMOSPHERE — Premium (Corrigido)
 ============================================================ */
 
+/* Fundo radial */
 body {
   background: radial-gradient(
       circle at top,
@@ -79,23 +89,28 @@ body {
       #05070c 100%
     );
   background-attachment: fixed;
-  position: relative;
 }
 
-/* Subtle noise (optimized) */
+/* Textura noise — FIX CORRIGIDO:
+   z-index baixo para não cobrir overlays */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
+
   pointer-events: none;
+
   background: url("data:image/png;base64,iVBORw0K...") repeat;
-  opacity: 0.045;     /* otimizado */
+  opacity: 0.045;
   mix-blend-mode: soft-light;
-  z-index: 0;
+
+  /* 🔥 Correção crítica:
+     z-index NEGATIVO → não interfere com sidebar, modals ou drag área */
+  z-index: -1;
 }
 
 /* ============================================================
-   EXECUTIVE CARDS (Unificados)
+   EXECUTIVE CARDS
 ============================================================ */
 .card,
 .panel-card,
@@ -104,29 +119,33 @@ body::before {
   border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: 1.4rem;
+
   backdrop-filter: var(--blur-card);
   -webkit-backdrop-filter: var(--blur-card);
+
   box-shadow: var(--shadow-card);
   position: relative;
-  z-index: 1;
+  z-index: 1; /* Cada card fica acima apenas da textura */
 }
 
 /* ============================================================
-   SECTION TITLE (Unificado + Premium Gradient)
+   SECTION TITLE
 ============================================================ */
 .section-title {
   font-family: var(--font-title);
   font-weight: 700;
   font-size: 1.75rem;
   letter-spacing: 0.3px;
+
   background: linear-gradient(90deg, var(--color-gold), var(--color-gold-soft));
-  -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
+
   margin-bottom: 0.25rem;
 }
 
 /* ============================================================
-   TEXT / LABELS
+   LABELS
 ============================================================ */
 .label-muted {
   color: rgba(255,255,255,0.55);
@@ -151,7 +170,7 @@ body::before {
 }
 
 /* ============================================================
-   RANGE THUMB (Gold Aesthetic)
+   RANGE THUMB
 ============================================================ */
 input[type="range"]::-webkit-slider-thumb {
   background: var(--color-gold);
@@ -163,14 +182,6 @@ input[type="range"]::-webkit-slider-thumb {
 /* ============================================================
    UTILITY CLASSES
 ============================================================ */
-.text-gold {
-  color: var(--color-gold);
-}
-
-.bg-gold {
-  background: var(--color-gold);
-}
-
-.border-gold {
-  border-color: var(--color-gold);
-}
+.text-gold { color: var(--color-gold); }
+.bg-gold { background: var(--color-gold); }
+.border-gold { border-color: var(--color-gold); }
