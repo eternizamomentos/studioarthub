@@ -102,7 +102,7 @@ export default function ProjectsBoard() {
 
       let base = Date.now();
 
-      parsed = parsed.map((col, i) => ({
+      parsed = parsed.map((col: any, i: number) => ({
         title: initialBoard[i]?.title ?? col.title ?? "Coluna",
         color: initialBoard[i]?.color ?? col.color ?? "amber",
         items: Array.isArray(col.items)
