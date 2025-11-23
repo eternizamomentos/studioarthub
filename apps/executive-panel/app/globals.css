@@ -185,3 +185,24 @@ input[type="range"]::-webkit-slider-thumb {
 .text-gold { color: var(--color-gold); }
 .bg-gold { background: var(--color-gold); }
 .border-gold { border-color: var(--color-gold); }
+
+/* ============================================================
+   Estilo SAH premium para markdown
+============================================================ */
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.3rem;
+}
+
+.prose li {
+  margin: 0.3rem 0;
+}
+
+.prose strong {
+  color: var(--color-gold);
+}
+
+.prose h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}

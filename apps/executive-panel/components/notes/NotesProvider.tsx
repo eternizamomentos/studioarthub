@@ -19,11 +19,22 @@ export type Notebook = {
   icon?: string;
 };
 
+export type NoteAttachment = {
+  id: string;
+  type: "audio" | "image" | "file";
+  url: string;
+  name: string;
+  duration?: number; // para áudio
+  size?: number;
+};
+
 export type Note = {
   id: string;
   notebookId: string;
   title: string;
   content: string;
+  attachments: NoteAttachment[];   // 🔥 novo campo
+  audio?: string[];                // ✅ campo para URLs de áudio anexados
   createdAt: number;
   updatedAt: number;
 };
@@ -46,7 +57,7 @@ type NotesContextType = {
   renameNotebook: (id: string, newName: string) => void;
   deleteNotebook: (id: string) => void;
 
-  createNote: () => Note;
+  createNote: () => Note | null;
   updateNote: (id: string, fields: Partial<Note>) => void;
   deleteNote: (id: string) => void;
 
@@ -55,7 +66,6 @@ type NotesContextType = {
   closeSidebar: () => void;
   toggleSidebar: () => void;
 
-  /* === Editor slide-in/out state === */
   editorVisible: boolean;
   openEditor: (noteId: string) => void;
   closeEditor: () => void;
@@ -73,7 +83,7 @@ const STORAGE_ACTIVE_NOTEBOOK = "sah_notes_activeNotebook_v1";
 const STORAGE_ACTIVE_NOTE = "sah_notes_activeNote_v1";
 
 /* ============================================================
-   PROVIDER — PREMIUM + ANIMATION-COMPATIBLE
+   PROVIDER — ULTRA PREMIUM
 ============================================================ */
 
 export function NotesProvider({ children }: { children: ReactNode }) {
@@ -86,7 +96,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [initialized, setInitialized] = useState(false);
 
   /* ============================================================
-     SIDEBAR STATE
+     SIDEBAR (UI)
   ============================================================= */
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -95,94 +105,91 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const toggleSidebar = () => setSidebarOpen((p) => !p);
 
   /* ============================================================
-     EDITOR ANIMATION STATE (Apple Notes)
+     EDITOR VISIBILITY (ANIMAÇÃO)
   ============================================================= */
-
   const [editorVisible, setEditorVisible] = useState(false);
 
-  /** Abre editor com animação */
   function openEditor(noteId: string) {
     setActiveNoteId(noteId);
-    setEditorVisible(true); // animação começa imediatamente
+    setEditorVisible(true);
   }
 
-  /** Fecha editor suavemente, remove activeNoteId só após a animação */
   function closeEditor() {
-    setEditorVisible(false); // aciona animação de saída (170ms)
+    setEditorVisible(false);
 
+    // Remove a nota ativa após animação completa
     setTimeout(() => {
-      setActiveNoteId(null); // remove nota após animação
-    }, 180); // Apple Notes: 170ms – usamos 180ms para segurança
+      setActiveNoteId(null);
+    }, 185);
   }
 
   /* ============================================================
-     LOAD FROM LOCALSTORAGE
+     LOAD FROM LOCALSTORAGE (robusto)
 ============================================================ */
-
   useEffect(() => {
     try {
-      const storedNB = localStorage.getItem(STORAGE_NOTEBOOKS);
-      const storedNT = localStorage.getItem(STORAGE_NOTES);
-
-      const nbs: Notebook[] = storedNB ? JSON.parse(storedNB) : [];
-      const nts: Note[] = storedNT ? JSON.parse(storedNT) : [];
+      const storedNB = JSON.parse(localStorage.getItem(STORAGE_NOTEBOOKS) || "[]");
+      const storedNT = JSON.parse(localStorage.getItem(STORAGE_NOTES) || "[]");
 
       let activeNB = localStorage.getItem(STORAGE_ACTIVE_NOTEBOOK);
       let activeNT = localStorage.getItem(STORAGE_ACTIVE_NOTE);
 
-      if (nbs.length === 0) {
-        const defaultNB: Notebook = {
+      // Notebook padrão
+      if (!storedNB.length) {
+        const defaultNB = {
           id: crypto.randomUUID(),
           name: "Geral",
           icon: "📒",
         };
-        nbs.push(defaultNB);
+        storedNB.push(defaultNB);
         activeNB = defaultNB.id;
       }
 
-      setNotebooks(nbs);
-      setNotes(nts);
-      setActiveNotebookId(activeNB ?? null);
-      setActiveNoteId(activeNT ?? null);
+      setNotebooks(storedNB);
+      setNotes(storedNT);
+      setActiveNotebookId(activeNB);
+      setActiveNoteId(activeNT);
 
-      if (activeNT) {
-        setEditorVisible(true); // restaura editor aberto
-      }
+      if (activeNT) setEditorVisible(true);
 
       setInitialized(true);
     } catch (err) {
-      console.error("Failed to load notes:", err);
+      console.error("❌ Erro carregando LocalStorage:", err);
     }
   }, []);
 
   /* ============================================================
-     SAVE LOCALSTORAGE
+     SAVE (com segurança)
 ============================================================ */
 
+  const safeStore = (key: string, value: any) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (err) {
+      console.error("❌ Erro salvando:", key, err);
+    }
+  };
+
   useEffect(() => {
-    if (!initialized) return;
-    localStorage.setItem(STORAGE_NOTEBOOKS, JSON.stringify(notebooks));
+    if (initialized) safeStore(STORAGE_NOTEBOOKS, notebooks);
   }, [notebooks, initialized]);
 
   useEffect(() => {
-    if (!initialized) return;
-    localStorage.setItem(STORAGE_NOTES, JSON.stringify(notes));
+    if (initialized) safeStore(STORAGE_NOTES, notes);
   }, [notes, initialized]);
 
   useEffect(() => {
     if (!initialized) return;
-    if (activeNotebookId !== null) {
-      localStorage.setItem(STORAGE_ACTIVE_NOTEBOOK, activeNotebookId);
-    }
+    activeNotebookId
+      ? localStorage.setItem(STORAGE_ACTIVE_NOTEBOOK, activeNotebookId)
+      : localStorage.removeItem(STORAGE_ACTIVE_NOTEBOOK);
   }, [activeNotebookId, initialized]);
 
   useEffect(() => {
     if (!initialized) return;
-    if (activeNoteId !== null) {
-      localStorage.setItem(STORAGE_ACTIVE_NOTE, activeNoteId);
-    } else {
-      localStorage.removeItem(STORAGE_ACTIVE_NOTE);
-    }
+    activeNoteId
+      ? localStorage.setItem(STORAGE_ACTIVE_NOTE, activeNoteId)
+      : localStorage.removeItem(STORAGE_ACTIVE_NOTE);
   }, [activeNoteId, initialized]);
 
   /* ============================================================
@@ -206,45 +213,42 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }
 
   function deleteNotebook(id: string) {
-    setNotebooks((p) => p.filter((n) => n.id !== id));
-    const toDelete = notes.filter((n) => n.notebookId === id);
+    const notesToDelete = notes.filter((n) => n.notebookId === id);
 
+    // Fecha editor SE a nota aberta está sendo removida
+    if (notesToDelete.some((n) => n.id === activeNoteId)) {
+      closeEditor();
+    }
+
+    setNotebooks((p) => p.filter((n) => n.id !== id));
     setNotes((p) => p.filter((n) => n.notebookId !== id));
 
     if (activeNotebookId === id) setActiveNotebookId(null);
-    if (toDelete.some((n) => n.id === activeNoteId)) {
-      closeEditor();
-    }
   }
 
   /* ============================================================
      NOTE ACTIONS
 ============================================================ */
 
-  function createNote(): Note {
+  function createNote(): Note | null {
     if (!activeNotebookId) {
-      console.warn("createNote called without notebook");
-      return {
-        id: "",
-        notebookId: "",
-        title: "",
-        content: "",
-        createdAt: 0,
-        updatedAt: 0,
-      };
+      console.warn("⚠ createNote chamado sem notebook ativo.");
+      return null;
     }
 
     const now = Date.now();
+
     const note: Note = {
       id: crypto.randomUUID(),
       notebookId: activeNotebookId,
       title: "Nova nota",
       content: "",
+      attachments: [],       // 🔥 novo
       createdAt: now,
       updatedAt: now,
     };
 
-    setNotes((p) => [...p, note]);
+    setNotes((prev) => [...prev, note]);
     openEditor(note.id);
 
     return note;
@@ -253,20 +257,20 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   function updateNote(id: string, fields: Partial<Note>) {
     setNotes((p) =>
       p.map((n) =>
-        n.id === id ? { ...n, ...fields, updatedAt: Date.now() } : n
+        n.id === id
+          ? { ...n, ...fields, updatedAt: Date.now() }
+          : n
       )
     );
   }
 
   function deleteNote(id: string) {
+    if (activeNoteId === id) closeEditor();
     setNotes((p) => p.filter((n) => n.id !== id));
-    if (activeNoteId === id) {
-      closeEditor();
-    }
   }
 
   /* ============================================================
-     CONTEXT VALUE
+     FINAL CONTEXT VALUE
 ============================================================ */
 
   const value: NotesContextType = {

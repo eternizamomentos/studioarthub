@@ -3,14 +3,10 @@
 
 import { useEffect, useState } from "react";
 import { useNotes } from "./NotesProvider";
-
-/* ============================================================
-   NOTE EDITOR · V4 PREMIER ANIMATION EDITION
-   - Compatível com o novo sistema de animação (editorVisible)
-   - Usa closeEditor() em vez de setActiveNote(null)
-   - Auto-save suave
-   - Altamente estável
-============================================================ */
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import AudioSection from "./AudioSection";
+import AccordionSection from "./AccordionSection";
 
 export default function NoteEditor() {
   const {
@@ -18,44 +14,69 @@ export default function NoteEditor() {
     activeNoteId,
     updateNote,
     deleteNote,
-    closeEditor,     // << NOVO: usa API correta
+    closeEditor,
   } = useNotes();
 
   const activeNote = notes.find((n) => n.id === activeNoteId) ?? null;
-
-  /* ============================================================
-     Se não existe nota ativa → não renderizar
-     (montagem é controlada pelo NoteEditorWrapper)
-  ============================================================= */
   if (!activeNote) return null;
 
-  /* ============================================================
-     Estados locais
-  ============================================================= */
   const [title, setTitle] = useState(activeNote.title);
   const [content, setContent] = useState(activeNote.content);
 
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<number | null>(null);
 
-  /* ============================================================
-     Atualiza quando troca a nota ativa
-  ============================================================= */
+  const [summary, setSummary] = useState<string>("");
+  const [summarizing, setSummarizing] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+
+  /* ===================== IA — Resumo Premium ===================== */
+  async function summarize() {
+    if (!activeNote) return;
+
+    setSummarizing(true);
+    setSummaryError(null);
+    setSummary("Gerando resumo via IA…");
+
+    try {
+      const res = await fetch(`/api/ai/summarize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: content }),
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        setSummaryError(data.error);
+        setSummary("");
+      } else {
+        setSummary(data.summary);
+      }
+    } catch (err) {
+      console.error(err);
+      setSummaryError("Falha ao conectar ao servidor.");
+      setSummary("");
+    }
+
+    setSummarizing(false);
+  }
+
+  /* ===================== Auto-update ===================== */
   useEffect(() => {
     if (!activeNote) return;
     setTitle(activeNote.title);
     setContent(activeNote.content);
+    setSummary("");
+    setSummaryError(null);
   }, [activeNoteId]);
 
-  /* ============================================================
-     Auto-save (400ms debounce)
-  ============================================================= */
+  /* ===================== Auto-save ===================== */
   useEffect(() => {
     if (!activeNote) return;
 
     const timer = setTimeout(() => {
       setSaving(true);
-
       updateNote(activeNote.id, { title, content });
 
       setTimeout(() => {
@@ -67,56 +88,27 @@ export default function NoteEditor() {
     return () => clearTimeout(timer);
   }, [title, content, activeNoteId]);
 
-  /* ============================================================
-     generateSummary
-  ============================================================= */
-  async function generateSummary() {
-    if (!activeNote) return;
-
-    const res = await fetch("/api/ai/summarize", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: content }),
-    });
-
-    const json = await res.json();
-
-    if (json.summary) {
-      setContent((prev) => prev + "\n\n---\n🧠 Resumo:\n" + json.summary);
-    }
-  }
-  
-  /* ============================================================
-     Ações
-  ============================================================= */
-  function handleClose() {
-    closeEditor(); // << animação + desativação correta
-  }
-
+  /* ===================== Delete ===================== */
   function handleDelete() {
     if (!activeNote) return;
     deleteNote(activeNote.id);
     closeEditor();
   }
 
-  /* ============================================================
-     UI Premium
-  ============================================================= */
+  /* ===================== UI ===================== */
   return (
     <div
       className="
         flex flex-col h-full w-full
         px-8 py-6
-        bg-[rgba(13,18,32,0.6)]
+        bg-[rgba(13,18,32,0.60)]
         backdrop-blur-xl
         border-l border-white/10
         overflow-y-auto
       "
     >
-      {/* ======================= Barra superior ======================= */}
+      {/* Header ================================================== */}
       <div className="flex items-center justify-between mb-6">
-
-        {/* Status */}
         <div className="text-xs text-pure/40 h-4">
           {saving ? (
             <span className="text-gold/80">Salvando…</span>
@@ -129,10 +121,7 @@ export default function NoteEditor() {
           )}
         </div>
 
-        {/* Botões */}
         <div className="flex items-center gap-2">
-
-          {/* Excluir */}
           <button
             onClick={handleDelete}
             className="
@@ -147,9 +136,9 @@ export default function NoteEditor() {
             Excluir
           </button>
 
-          {/* RESUMO IA */}
           <button
-            onClick={generateSummary}
+            onClick={summarize}
+            disabled={summarizing}
             className="
               px-3 py-1.5 text-xs
               bg-gold/20 text-gold
@@ -159,12 +148,11 @@ export default function NoteEditor() {
               transition
             "
           >
-            Resumo IA
+            {summarizing ? "IA..." : "Resumo IA"}
           </button>
 
-          {/* Fechar */}
           <button
-            onClick={handleClose}
+            onClick={closeEditor}
             className="
               px-3 py-1.5 text-xs
               bg-white/10 text-pure/80
@@ -179,7 +167,7 @@ export default function NoteEditor() {
         </div>
       </div>
 
-      {/* ======================= Título ======================= */}
+      {/* Título ================================================== */}
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -190,10 +178,10 @@ export default function NoteEditor() {
           mb-6
           placeholder:text-pure/20
         "
-        placeholder="Título da nota…"
+        placeholder="Título da nota..."
       />
 
-      {/* ======================= Conteúdo ======================= */}
+      {/* Conteúdo ================================================ */}
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -205,6 +193,42 @@ export default function NoteEditor() {
         "
         placeholder="Escreva algo inspirador..."
       />
+
+      {/* 🔊 ÁUDIO (Accordion) ==================================== */}
+      <AccordionSection title="Áudio" defaultOpen={false}>
+        <AudioSection noteId={activeNote.id} />
+      </AccordionSection>
+
+      {/* 🤖 RESUMO IA (Accordion) ================================= */}
+      <AccordionSection title="Resumo IA" defaultOpen={false}>
+        {summaryError && (
+          <p className="text-red-400 text-sm mb-2">{summaryError}</p>
+        )}
+
+        {summary && (
+          <div className="prose prose-invert max-w-none leading-relaxed">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                p: ({ node, ...props }) => (
+                  <p className="mb-3 leading-relaxed whitespace-pre-line" {...props} />
+                ),
+                li: ({ node, ...props }) => (
+                  <li className="mb-1 leading-relaxed" {...props} />
+                ),
+              }}
+            >
+              {summary}
+            </ReactMarkdown>
+          </div>
+        )}
+
+        {!summary && !summaryError && (
+          <p className="text-pure/40 text-sm">
+            Clique no botão “Resumo IA” para gerar.
+          </p>
+        )}
+      </AccordionSection>
     </div>
   );
 }
