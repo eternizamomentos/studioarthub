@@ -148,6 +148,7 @@ export default function NotesSidebar() {
 
   function handleCreateNote() {
     const created = createNote();
+    if (!created) return;
     setActiveNotebook(created.notebookId);
     setActiveNote(created.id);
     // ❌ REMOVE closeSidebar()

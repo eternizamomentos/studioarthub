@@ -40,35 +40,15 @@ export default function AudioSection({ noteId }: { noteId: string }) {
   const [recording, setRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
-  // Extrai URLs de note.audio (pode ser string[] ou objetos legados)
-  const extractUrls = (audio: (string | AudioItem)[] | undefined): string[] => {
+  // Normaliza note.audio (string[]) para AudioItem[] para exibição
+  const normalizeAudio = (audio: string[] | undefined): AudioItem[] => {
     if (!audio) return [];
-    return audio.map((item) => {
-      if (typeof item === "string") return item;
-      if (typeof item === "object" && item !== null && "url" in item) {
-        return item.url;
-      }
-      return String(item);
-    });
-  };
-
-  // Normaliza note.audio (string[] ou objetos legados) para AudioItem[] para exibição
-  const normalizeAudio = (audio: (string | AudioItem)[] | undefined): AudioItem[] => {
-    if (!audio) return [];
-    return audio.map((item) => {
-      // Se já é um objeto AudioItem, retornar como está
-      if (typeof item === "object" && item !== null && "url" in item) {
-        return item as AudioItem;
-      }
-      // Se é string, normalizar para AudioItem
-      const url = typeof item === "string" ? item : String(item);
-      return {
-        name: url.includes("audio/") ? url.split("/").pop() || "Áudio" : "Gravação de áudio.webm",
-        size: 0,
-        url,
-        type: url.startsWith("data:audio/") ? "audio/webm" : "audio/*",
-      };
-    });
+    return audio.map((url) => ({
+      name: url.includes("audio/") ? url.split("/").pop() || "Áudio" : "Gravação de áudio.webm",
+      size: 0,
+      url,
+      type: url.startsWith("data:audio/") ? "audio/webm" : "audio/*",
+    }));
   };
 
   const attachments: AudioItem[] = normalizeAudio(note.audio);
@@ -76,7 +56,7 @@ export default function AudioSection({ noteId }: { noteId: string }) {
   function handleDeleteAudio(index: number) {
     const currentNote = notes.find((n) => n.id === noteId);
     if (!currentNote) return;
-    const currentUrls = extractUrls(currentNote.audio as (string | AudioItem)[]);
+    const currentUrls = currentNote.audio ?? [];
     const updated = [...currentUrls];
     updated.splice(index, 1);
     updateNote(noteId, { audio: updated });
@@ -107,9 +87,8 @@ export default function AudioSection({ noteId }: { noteId: string }) {
 
       const currentNote = notes.find((n) => n.id === noteId);
       if (!currentNote) return;
-      const currentUrls = extractUrls(currentNote.audio as (string | AudioItem)[]);
       updateNote(noteId, {
-        audio: [...currentUrls, data.url],
+        audio: [...(currentNote.audio ?? []), data.url],
       });
     } catch (err) {
       console.error("Upload falhou:", err);
@@ -132,9 +111,8 @@ export default function AudioSection({ noteId }: { noteId: string }) {
         reader.onload = () => {
           const currentNote = notes.find((n) => n.id === noteId);
           if (!currentNote) return;
-          const currentUrls = extractUrls(currentNote.audio as (string | AudioItem)[]);
           updateNote(noteId, {
-            audio: [...currentUrls, reader.result as string],
+            audio: [...(currentNote.audio ?? []), reader.result as string],
           });
         };
 
