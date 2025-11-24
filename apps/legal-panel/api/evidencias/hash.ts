@@ -79,10 +79,16 @@ export async function POST(request: Request) {
 // Utilitário SHA-256
 // =============================================================
 async function sha256(data: ArrayBuffer | Buffer): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest(
-    "SHA-256",
-    data instanceof Buffer ? data : data,
-  );
+  let arrayBuffer: ArrayBuffer;
+  if (data instanceof Buffer) {
+    // Convert Buffer to a copied ArrayBuffer (to avoid SharedArrayBuffer or Buffer confusion)
+    arrayBuffer = new Uint8Array(data).buffer;
+  } else if (data instanceof ArrayBuffer) {
+    arrayBuffer = data;
+  } else {
+    throw new TypeError("data must be Buffer or ArrayBuffer");
+  }
+  const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
   return Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
