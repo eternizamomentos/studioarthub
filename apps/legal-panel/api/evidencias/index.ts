@@ -164,13 +164,25 @@ export async function POST(request: Request) {
 }
 
 // ===================================================================
-// Utilitário — SHA-256 puro (sem dependências externas)
+// SHA-256 — compatível com Node + WebCrypto (Cloudflare Workers / Next.js)
 // ===================================================================
 async function sha256(data: ArrayBuffer | Buffer): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest(
-    "SHA-256",
-    data instanceof Buffer ? data : data,
-  );
+  let arrayBuffer: ArrayBuffer;
+
+  if (Buffer.isBuffer(data)) {
+    // Conversão segura do Buffer → ArrayBuffer real
+    arrayBuffer = data.buffer instanceof ArrayBuffer
+      ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
+      : new Uint8Array(data).buffer;
+  } else {
+    // Já é ArrayBuffer (Front-end ou File API)
+    arrayBuffer = data;
+  }
+
+  const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+  return hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
