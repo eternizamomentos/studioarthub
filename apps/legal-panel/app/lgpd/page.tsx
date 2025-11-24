@@ -18,8 +18,7 @@ export default function LGPDPage() {
         eyebrow="Domínio Jurídico"
         title="Proteção de Dados (LGPD)"
         subtitle="Práticas obrigatórias para garantir segurança, privacidade e conformidade no tratamento de dados de clientes, parceiros e usuários."
-        rightSlot={<LegalBadge tone="gold">LGPD</LegalBadge>}
-      />
+        rightSlot={<LegalBadge tone="gold">LGPD</LegalBadge>} children={""}      />
 
       {/* ============================================================
          SEÇÃO 1 — CHECKLIST LGPD
