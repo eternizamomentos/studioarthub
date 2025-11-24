@@ -19,8 +19,7 @@ export default function ContratosPage() {
         eyebrow="Domínio Jurídico"
         title="Contratos & Minutas"
         subtitle="Gerencie contratos, modelos, minutas, revisões e checklist jurídico com suporte inteligente de IA."
-        rightSlot={<LegalBadge tone="gold">Proteção Legal</LegalBadge>}
-      />
+        rightSlot={<LegalBadge tone="gold">Proteção Legal</LegalBadge>} children={""}      />
 
       {/* ============================================================
           LISTA DE CONTRATOS
