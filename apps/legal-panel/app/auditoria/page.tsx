@@ -22,8 +22,7 @@ export default function AuditoriaPage() {
         eyebrow="Domínio Jurídico"
         title="Auditoria & Logs"
         subtitle="Monitoramento contínuo de ações internas, evidências técnicas e cadeia de custódia do Studio Art Hub."
-        rightSlot={<LegalBadge tone={nivelRisco}>{totalEventos} eventos</LegalBadge>}
-      />
+        rightSlot={<LegalBadge tone={nivelRisco}>{totalEventos} eventos</LegalBadge>} children={""}      />
 
       {/* ============================================================
          SEÇÃO — FILTROS
