@@ -46,10 +46,10 @@ export default function ComplianceScoreRing({
       {/* Glow pulse outer ring */}
       {pulse && (
         <div
-          className="
+          className={`
             absolute inset-0 rounded-full
             animate-[pulseGlow_2.2s_ease-in-out_infinite]
-          "
+          `}        
           style={{
             boxShadow:
               "0 0 22px rgba(231,183,95,0.45), 0 0 38px rgba(255,255,255,0.25)",
