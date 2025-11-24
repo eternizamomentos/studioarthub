@@ -12,6 +12,8 @@
     "noEmit": true,
     "incremental": true,
     "module": "esnext",
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
