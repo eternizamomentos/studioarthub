@@ -18,8 +18,7 @@ export default function IAPolicyPage() {
         eyebrow="Domínio Jurídico"
         title="Uso de IA na Criação"
         subtitle="Definição de políticas, limites e evidências para o uso de IA na voz, letra, arranjo e master das músicas do Studio Art Hub."
-        rightSlot={<LegalBadge tone="gold">Política de IA</LegalBadge>}
-      />
+        rightSlot={<LegalBadge tone="gold">Política de IA</LegalBadge>} children={""}      />
 
       {/* ============================================================
          SEÇÃO 1 — GOVERNANÇA E POLÍTICAS
